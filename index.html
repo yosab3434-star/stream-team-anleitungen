@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Technikpult-Anleitungen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,600..800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: ein Technikpult. Startseite = vier Kanalzüge mit Status-LED, Anleitung = Cue-Liste mit Schritt-Karten. */
+:root {
+  --bg: #eef0f4;
+  --surface: #ffffff;
+  --surface-2: #f6f7fa;
+  --ink: #161a22;
+  --muted: #5b6372;
+  --line: #d9dde5;
+  --ok: #1d8a52;
+  --ok-bg: #e5f4ec;
+  --proj: #d9560a;
+  --stream: #d42a3a;
+  --sound: #148a6b;
+  --light: #a87400;
+  --shadow: 0 1px 2px rgba(22, 26, 34, .06), 0 6px 20px rgba(22, 26, 34, .06);
+  --f-display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1116; --surface: #171b22; --surface-2: #1d222b; --ink: #eceff4; --muted: #9aa3b2;
+    --line: #2a313c; --ok: #4cc488; --ok-bg: #14271e;
+    --proj: #ff8a3d; --stream: #ff5a66; --sound: #3fcf9f; --light: #f2c14e;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1116; --surface: #171b22; --surface-2: #1d222b; --ink: #eceff4; --muted: #9aa3b2;
+  --line: #2a313c; --ok: #4cc488; --ok-bg: #14271e;
+  --proj: #ff8a3d; --stream: #ff5a66; --sound: #3fcf9f; --light: #f2c14e;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 17px/1.55 var(--f-body);
+}
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; }
+@media (max-width: 520px) { .wrap { padding-inline: 16px; padding-block: 18px 48px; } }
+
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--c, var(--proj)); outline-offset: 3px; border-radius: 6px; }
+
+.cat-projektion { --c: var(--proj); }
+.cat-stream { --c: var(--stream); }
+.cat-sound { --c: var(--sound); }
+.cat-light { --c: var(--light); }
+
+/* ---------- Kopfzeile ---------- */
+.eyebrow {
+  font: 700 12px/1 var(--f-mono);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(34px, 6vw, 54px); font-weight: 800; font-stretch: 112%; line-height: 1.02; letter-spacing: -.01em; }
+h2 { font-size: clamp(22px, 3.4vw, 28px); font-weight: 750; font-stretch: 105%; line-height: 1.15; }
+h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
+
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-bottom: 22px; }
+.back {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--line); background: var(--surface);
+  padding: 7px 14px 7px 10px; border-radius: 999px; cursor: pointer;
+  font-weight: 700; font-size: 15px;
+}
+.back:hover { border-color: var(--muted); }
+.back svg { width: 18px; height: 18px; }
+.crumbs .sep { color: var(--muted); }
+.crumbs .here { color: var(--muted); font-size: 15px; }
+
+/* ---------- Startseite ---------- */
+.intro { display: grid; gap: 10px; margin-bottom: 30px; }
+.intro p { margin: 0; color: var(--muted); max-width: 52ch; font-size: 18px; }
+
+.desk {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 860px) { .desk { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .desk { gap: 10px; } }
+
+.strip {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 18px;
+  min-height: 250px;
+  padding: 18px 18px 16px;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform .18s ease, border-color .18s ease;
+}
+.strip::after {
+  content: "";
+  position: absolute; inset: auto 0 0 0; height: 4px;
+  background: var(--c);
+  transform: scaleX(.18); transform-origin: left;
+  transition: transform .3s ease;
+}
+.strip:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--c) 45%, var(--line)); }
+.strip:hover::after, .strip:focus-visible::after { transform: scaleX(1); }
+@media (max-width: 420px) { .strip { min-height: 200px; padding: 14px; gap: 12px; } }
+
+.strip-top { display: flex; justify-content: space-between; align-items: center; }
+.led {
+  display: inline-flex; align-items: center; gap: 7px;
+  font: 700 11px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+}
+.led i {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 22%, transparent), 0 0 12px color-mix(in srgb, var(--c) 70%, transparent);
+}
+.led.off i { background: var(--line); box-shadow: none; }
+.strip-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: grid; place-items: center;
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 12%, var(--surface));
+}
+.strip-icon svg { width: 30px; height: 30px; }
+@media (max-width: 420px) { .strip-icon { width: 44px; height: 44px; } .strip-icon svg { width: 26px; height: 26px; } }
+.strip-name { font: 800 clamp(24px, 3vw, 30px)/1 var(--f-display); font-stretch: 115%; align-self: end; }
+.strip-blurb { color: var(--muted); font-size: 15px; line-height: 1.4; margin-top: 6px; }
+.strip-foot {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 12px; border-top: 1px dashed var(--line);
+  font: 500 13px/1 var(--f-mono); color: var(--muted);
+}
+.strip-foot b { color: var(--ink); font-weight: 700; }
+.strip-foot svg { width: 18px; height: 18px; color: var(--c); }
+
+/* ---------- Kategorie ---------- */
+.cat-head { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.cat-head .strip-icon { width: 64px; height: 64px; flex: none; }
+.cat-head .strip-icon svg { width: 36px; height: 36px; }
+.cat-head p { margin: 4px 0 0; color: var(--muted); }
+
+.guide-list { display: grid; gap: 12px; }
+.guide-card {
+  display: grid;
+  grid-template-columns: 148px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 18px 12px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  text-align: left; cursor: pointer;
+  transition: border-color .18s ease, transform .18s ease;
+}
+.guide-card:hover { border-color: var(--c); transform: translateY(-2px); }
+.guide-card img { width: 148px; height: 104px; object-fit: cover; border-radius: 10px; display: block; background: var(--surface-2); }
+.guide-card h3 { margin-bottom: 4px; }
+.guide-card p { margin: 0; color: var(--muted); font-size: 15px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chip {
+  font: 500 12px/1 var(--f-mono); padding: 6px 9px; border-radius: 999px;
+  background: var(--surface-2); border: 1px solid var(--line); color: var(--muted);
+}
+.go { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: var(--c); color: #fff; }
+.go svg { width: 20px; height: 20px; }
+@media (max-width: 600px) {
+  .guide-card { grid-template-columns: 96px minmax(0, 1fr); padding: 10px; gap: 12px; }
+  .guide-card img { width: 96px; height: 96px; }
+  .go { display: none; }
+}
+
+.empty {
+  display: grid; justify-items: start; gap: 10px;
+  padding: 28px; border-radius: 16px;
+  border: 2px dashed var(--line);
+  background: var(--surface);
+}
+.empty p { margin: 0; color: var(--muted); max-width: 52ch; }
+
+/* ---------- Anleitung ---------- */
+.guide-head { display: grid; gap: 10px; margin-bottom: 18px; }
+.guide-head .eyebrow { color: var(--c); }
+.guide-head p { margin: 0; color: var(--muted); }
+.guide-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 14px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--surface);
+  font-weight: 700; font-size: 15px; text-decoration: none; color: var(--ink); cursor: pointer;
+}
+.btn:hover { border-color: var(--muted); }
+.btn svg { width: 18px; height: 18px; }
+
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  margin-inline: -20px; padding: 12px 20px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  display: grid; gap: 10px;
+}
+@media (max-width: 520px) { .progress { margin-inline: -16px; padding: 10px 16px; } }
+.progress-row { display: flex; align-items: center; gap: 12px; }
+.bar { flex: 1; height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; background: var(--c); border-radius: inherit; transition: width .35s ease; }
+.count { font: 700 13px/1 var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.phases { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.phases::-webkit-scrollbar { display: none; }
+.phase-btn {
+  flex: none; padding: 6px 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface);
+  font: 700 12px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+}
+.phase-btn:hover { border-color: var(--c); color: var(--c); }
+
+.phase { margin-top: 34px; scroll-margin-top: 110px; }
+.phase-label { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+.phase-label .eyebrow { color: var(--c); }
+.phase-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+.chapter { margin-top: 22px; display: grid; gap: 12px; scroll-margin-top: 110px; }
+.chapter > h2 { display: flex; align-items: baseline; gap: 12px; }
+.chapter > h2 .num { font: 700 14px/1 var(--f-mono); color: var(--muted); }
+
+.step {
+  display: grid;
+  grid-template-columns: minmax(0, 46%) minmax(0, 1fr);
+  gap: 20px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  transition: border-color .2s ease, opacity .2s ease;
+}
+.step.done { border-color: color-mix(in srgb, var(--ok) 50%, var(--line)); }
+.step.done .step-img img { opacity: .55; }
+@media (max-width: 720px) { .step { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 12px; } }
+
+.step-img {
+  border: 0; padding: 0; margin: 0; cursor: zoom-in;
+  background: var(--surface-2); border-radius: 12px; overflow: hidden;
+  display: grid; place-items: center; min-height: 160px; max-height: 300px;
+  position: relative;
+}
+.step-img img { display: block; width: 100%; height: 100%; max-height: 300px; object-fit: contain; transition: opacity .2s ease; }
+.step-img .zoom {
+  position: absolute; right: 8px; bottom: 8px;
+  width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center;
+  background: rgba(0, 0, 0, .55); color: #fff;
+}
+.step-img .zoom svg { width: 16px; height: 16px; }
+
+.step-imgs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-content: start; }
+.step-imgs .step-img { min-height: 120px; }
+
+.map { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.map li {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+  padding: 8px 12px; border-radius: 10px;
+  background: var(--surface-2); border: 1px solid var(--line);
+  font-size: 15px;
+}
+.map li svg { width: 16px; height: 16px; color: var(--c); flex: none; }
+.map li b { font-family: var(--f-mono); font-size: 14px; }
+
+.step-body { display: grid; align-content: start; gap: 10px; min-width: 0; }
+.step-title { display: flex; align-items: flex-start; gap: 12px; }
+.step-no {
+  flex: none; min-width: 38px; height: 38px; padding: 0 8px; border-radius: 10px;
+  display: grid; place-items: center;
+  background: var(--c); color: #fff;
+  font: 700 15px/1 var(--f-mono); font-variant-numeric: tabular-nums;
+}
+.step.done .step-no { background: var(--ok); }
+.step-title h3 { padding-top: 6px; }
+.step-body p { margin: 0; }
+.step-body strong { font-weight: 700; }
+
+.check {
+  justify-self: start; margin-top: 4px;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 8px 14px 8px 10px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface-2);
+  font-weight: 700; font-size: 15px;
+}
+.check .box {
+  width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--muted);
+  display: grid; place-items: center; color: transparent;
+}
+.check .box svg { width: 14px; height: 14px; }
+.step.done .check { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.step.done .check .box { background: var(--ok); border-color: var(--ok); color: #fff; }
+
+.ready {
+  display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline;
+  padding: 12px 16px; border-radius: 12px;
+  background: var(--ok-bg); border: 1px solid color-mix(in srgb, var(--ok) 45%, transparent);
+}
+.ready .eyebrow { color: var(--ok); }
+.ready span:last-child { font-weight: 700; }
+
+.finish {
+  margin-top: 36px; padding: 22px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;
+}
+.finish p { margin: 0; color: var(--muted); }
+
+.foot { margin-top: 48px; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 16px; }
+
+/* ---------- Bild gross ---------- */
+.lightbox {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(8, 10, 14, .92);
+  display: grid; grid-template-rows: 1fr auto; gap: 12px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  cursor: zoom-out;
+}
+.lightbox img { width: 100%; height: 100%; object-fit: contain; min-height: 0; }
+.lightbox p { margin: 0; text-align: center; color: #e9edf3; font-weight: 700; }
+.lightbox .close {
+  position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px;
+  width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer;
+  background: rgba(255, 255, 255, .14); color: #fff; display: grid; place-items: center;
+}
+.lightbox .close svg { width: 22px; height: 22px; }
+
+.view { animation: rise .28s ease both; }
+@keyframes rise { from { opacity: .4; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .view { animation: none; }
+  .strip, .guide-card, .strip::after, .bar span { transition: none; }
+}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<div class="lightbox" id="lightbox" hidden>
+  <img id="lb-img" alt="">
+  <p id="lb-cap"></p>
+  <button class="close" id="lb-close" aria-label="Bild schliessen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+</div>
+
+<script>
+const ICONS = {
+  projektion: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="20" height="11" rx="2.5"/><circle cx="17" cy="16.5" r="3"/><path d="M7 15h4M7 18h3M23 13.5l6-3M23 16.5h6M23 19.5l6 3M7 22v3M19 22v3"/></svg>',
+  stream: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="16" cy="16" r="2.6" fill="currentColor"/><path d="M11 11a7 7 0 0 0 0 10M21 11a7 7 0 0 1 0 10M7 7a12.5 12.5 0 0 0 0 18M25 7a12.5 12.5 0 0 1 0 18"/></svg>',
+  sound: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 4v24M16 4v24M24 4v24"/><rect x="5" y="17" width="6" height="4" rx="1.2" fill="currentColor"/><rect x="13" y="9" width="6" height="4" rx="1.2" fill="currentColor"/><rect x="21" y="20" width="6" height="4" rx="1.2" fill="currentColor"/></svg>',
+  light: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4h12l-2 8h-8z"/><path d="M12 12l-6 16h20l-6-16" opacity=".6"/><path d="M16 1v1.5M5 8l1.5 1M27 8l-1.5 1"/></svg>'
+};
+const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+const BACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>';
+const ZOOM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5M10.5 8v5M8 10.5h5"/></svg>';
+const TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const DOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>';
+const RESET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.5-5.8M4 4v4h4"/></svg>';
+
+const CATEGORIES = [
+  { id: 'projektion', name: 'Projektion', blurb: 'Beamer, Leinwand, FreeShow und BibleShow', guides: ['projektion-beamer'] },
+  { id: 'stream', name: 'Stream', blurb: 'Fernseher, Videos und Übertragung', guides: ['stream-tv-video'] },
+  { id: 'sound', name: 'Sound', blurb: 'Mixer, Szenen und Funkmikrofone', guides: ['sound-mix'] },
+  { id: 'light', name: 'Light', blurb: 'Lichtkonsole, iPad und Photon-App', guides: ['light-op'] }
+];
+
+const GUIDES = {
+  'projektion-beamer': {
+    cat: 'projektion',
+    title: 'Beamer, Leinwand und Folien',
+    sub: 'Vom Aufbauen über FreeShow und BibleShow bis zum Abbau.',
+    pdf: 'pdf/projektion-anleitung.pdf',
+    cover: 'bilder/projektion-07.jpg',
+    phases: [
+      { name: 'Aufbau', chapters: [
+        { title: 'Kabel holen und Strom einstecken', ready: 'Der Stromstecker sitzt vollständig in der Buchse.', steps: [
+          { t: 'HDMI-Kabel holen', img: 'projektion-01', d: 'Suche im Technikregal die graue Box. Auf dem Bild zeigt der rote Kreis, wo das HDMI-Kabel liegt. Nimm das Kabel und wickle es vollständig ab. Mit diesem Kabel wird später das Bild zum Beamer übertragen.' },
+          { t: 'Stromkabel am Beamer einstecken', img: 'projektion-02', d: 'Suche hinten am Beamer die grosse schwarze Strombuchse. Die rote Markierung im Bild zeigt die Stelle. Stecke das passende Ende des Stromkabels vollständig hinein. Der Stecker muss ohne Gewalt passen; das HDMI-Kabel gehört nicht in diese Buchse.' }
+        ]},
+        { title: 'Strom einschalten und HDMI verbinden', ready: 'Der Schalter leuchtet. Beide Kabel sind eingesteckt.', steps: [
+          { t: 'Orangen Schalter einschalten', img: 'projektion-03', d: 'Suche am Technikplatz den orangefarbenen Schalter auf dem Foto. Schalte ihn ein und kontrolliere, ob er leuchtet. Damit ist die Stromversorgung eingeschaltet. Der Beamer wird erst später mit seiner Fernbedienung gestartet.' },
+          { t: 'HDMI am Beamer einstecken', img: 'projektion-04', d: 'Stecke ein Ende des HDMI-Kabels in den blau markierten HDMI-Anschluss hinten am Beamer. Die rote Markierung zeigt zum Vergleich den Stromanschluss. Achte auf die Form des Steckers und drücke ihn gerade hinein. Nicht mit Gewalt einstecken.' }
+        ]},
+        { title: 'Kabel zum Technikpult führen', ready: 'Beide Enden des HDMI-Kabels sind angeschlossen.', steps: [
+          { t: 'Kabel am Tischrand entlanglegen', img: 'projektion-05', d: 'Führe das freie Ende des HDMI-Kabels vom Beamer zum Technikpult. Lege es wie im Bild am Tischrand entlang. Lass etwas Spiel am Beamer, damit niemand am Anschluss zieht. Im Durchgang darf keine lose Kabelschlaufe liegen.' },
+          { t: 'Anderes HDMI-Ende am Splitter anschliessen', img: 'projektion-06', d: 'Suche am Technikpult den HDMI-Splitter, der im Bild gezeigt wird. Er verteilt das Bild auf mehrere Geräte. Das Kabel zum Beamer gehört an einen Ausgang, meist mit <strong>OUTPUT</strong> beschriftet. Die genaue Buchse ist auf dem Foto nicht erkennbar: Lass sie dir vor Ort zeigen.' }
+        ]},
+        { title: 'Beamer einschalten', ready: 'Auf der Leinwand ist ein Bild oder das Beamer-Menü sichtbar.', steps: [
+          { t: 'Fernbedienung auf den Beamer richten', img: 'projektion-07', d: 'Nimm die Fernbedienung, die zum Beamer gehört, nicht die TV-Fernbedienung. Richte sie auf den Beamer und drücke einmal die Ein-/Aus-Taste (<strong>POWER</strong>). Warte danach auf den Start; drücke die Taste nicht sofort nochmals.' },
+          { t: 'Warten, bis ein Bild erscheint', img: 'projektion-08', d: 'Schau jetzt auf die Leinwand. Der Beamer braucht einen Moment zum Starten. Ein Startbild, Menü oder eine Meldung zeigt, dass er eingeschaltet ist. Das Notebook-Bild muss noch nicht sichtbar sein. Bleibt alles dunkel, kontrolliere Stromkabel und orangefarbenen Schalter.' }
+        ]},
+        { title: 'Notebook und Fernseher einstellen', ready: 'Der Fernseher ist an. Windows steht auf Erweitern.', steps: [
+          { t: 'Windows + P drücken', img: 'projektion-09', d: 'Am Notebook: Halte die Taste mit dem Windows-Zeichen gedrückt und drücke zusätzlich <strong>P</strong>. Lass beide Tasten los. Klicke im eingeblendeten Menü auf <strong>Erweitern</strong>. So bleiben die Bedienung am Notebook und die Ausgabe für die Leinwand getrennt.' },
+          { t: 'Fernseher einschalten', img: 'projektion-10', d: 'Nimm die Fernbedienung des Fernsehers. Richte sie auf den Fernseher und drücke die Ein-/Aus-Taste (<strong>POWER</strong>). Warte, bis er reagiert. Prüfe zuerst, ob der Bildschirm eingeschaltet ist; die Bildquelle am ATEM wählst du im nächsten Schritt.' }
+        ]},
+        { title: 'Notebook-Bild auswählen', ready: 'Taste 2 leuchtet. FreeShow ist geöffnet.', steps: [
+          { t: 'Am ATEM die Taste 2 drücken', img: 'projektion-11', d: 'Suche am Technikpult das ATEM-Bediengerät auf dem Foto. Drücke dort die <strong>Taste 2</strong> mit der Beschriftung Notebook. Damit wählst du das Notebook als Bildquelle. Kontrolliere, ob die Taste leuchtet. Ändere die übrigen Tasten für diesen Schritt nicht.' },
+          { t: 'FreeShow öffnen', img: 'projektion-12', d: 'Drücke am Notebook die Windows-Taste und tippe <strong>FreeShow</strong>. Öffne den passenden Programmeintrag mit Enter. Warte, bis das Programmfenster erscheint. Im Bild siehst du die Arbeitsoberfläche; die kleinen Vorschaubilder darin sind die einzelnen Folien.' }
+        ]}
+      ]},
+      { name: 'FreeShow', chapters: [
+        { title: 'FreeShow auf der Leinwand zeigen', ready: 'Die Ausgabe erscheint auf der Leinwand, nicht auf dem Notebook.', steps: [
+          { t: 'Ausgabe einschalten', img: 'projektion-13', d: 'Suche in FreeShow ganz oben rechts das kleine Bildschirm-Symbol (<strong>Present</strong>). Im Bild ist es das weisse Symbol rechts neben dem Zahnrad. Klicke darauf, um die Ausgabe zu starten. Falls eine Bildschirmauswahl erscheint, fahre mit dem nächsten Schritt fort.' },
+          { t: 'Bildschirm für die Leinwand wählen', img: 'projektion-14', d: 'Wähle im Fenster <strong>Choose screen</strong> den externen Bildschirm für die Leinwand. Im Beispiel ist das Bildschirm 2; die Nummer kann vor Ort anders sein. Kontrolliere die Leinwand nach der Auswahl. Die FreeShow-Bedienoberfläche soll weiterhin auf dem Notebook bleiben.' }
+        ]},
+        { title: 'Folien zeigen und ausblenden', ready: 'Kontrolliere jede Änderung direkt auf der Leinwand.', steps: [
+          { t: 'Gewünschte Folie anklicken', img: 'projektion-15', d: 'Öffne die gewünschte Präsentation in FreeShow. Klicke auf das Vorschaubild der Folie, die alle sehen sollen. Kontrolliere den Inhalt auf der Leinwand. Für die nächste Folie kannst du bei aktivem FreeShow-Fenster die <strong>Leertaste</strong> drücken oder das nächste Vorschaubild anklicken.' },
+          { t: 'Bei einer Pause Clear all anklicken', img: 'projektion-16', d: 'Wenn auf der Leinwand keine Folie mehr stehen soll, klicke rechts unter der Vorschau auf <strong>Clear all</strong>. Damit entfernst du die aktuell ausgegebenen Inhalte, nicht die gespeicherte Präsentation. Zum Weiterzeigen klickst du wieder auf die gewünschte Folie.' }
+        ]}
+      ]},
+      { name: 'BibleShow', chapters: [
+        { title: 'Einen Bibelvers anzeigen', ready: 'Bibelstelle und Text auf der Leinwand stimmen.', steps: [
+          { t: 'BibleShow öffnen und Bibelstelle eingeben', img: 'projektion-17', d: 'Die abgebildete Bibel-Anwendung heisst BibleShow. Öffne sie über die Windows-Suche. Klicke unten links in das Feld <strong>Reference</strong>. Gib die Bibelstelle ein, zum Beispiel <strong>Psa 23 4</strong> für Psalm 23, Vers 4. Prüfe, ob der gewünschte Vers in der Liste erscheint.' },
+          { t: 'Beim gewünschten Vers auf das rote Dreieck klicken', img: 'projektion-18', d: 'Suche den gewünschten Vers in der Liste. Klicke links neben seinem Text auf das kleine rote Dreieck, auf das der Pfeil im Bild zeigt. Kontrolliere Bibelstelle und Text auf der Leinwand. Wenn der Vers nicht mehr gezeigt werden soll, klicke in BibleShow auf <strong>Hide</strong>.' }
+        ]}
+      ]},
+      { name: 'Abbau', chapters: [
+        { title: 'Nach dem Anlass', ready: 'Alles ist ausgeschaltet und am Aufbewahrungsort.', steps: [
+          { t: 'Programme und Geräte ausschalten', img: 'projektion-19', d: 'Blende die Inhalte aus und schliesse die Programme. Speichere Änderungen, wenn du sie behalten möchtest. Schalte Fernseher und Beamer mit der jeweiligen Fernbedienung aus. Falls der Beamer eine Bestätigung verlangt, bestätige sie. Lass seine Stromversorgung während des Abkühlens eingeschaltet.' },
+          { t: 'Kabel lösen und aufwickeln', img: 'projektion-20', d: 'Warte, bis der Beamer fertig abgekühlt ist und sein Lüfter nicht mehr läuft. Schalte erst dann die Stromversorgung aus. Löse die Kabel am Stecker, nicht durch Ziehen am Kabel. Wickle sie locker auf und lege Kabel und Fernbedienungen an ihren Aufbewahrungsort zurück.' }
+        ]}
+      ]}
+    ]
+  },
+  'stream-tv-video': {
+    cat: 'stream',
+    title: 'TV Video Setup',
+    sub: 'Fernseher mit USB-Stick starten und das Video in Dauerschleife laufen lassen.',
+    pdf: 'pdf/stream-tv-video-setup.pdf',
+    cover: 'bilder/stream-tv-04.jpg',
+    phases: [
+      { name: 'Fernseher mit USB-Stick starten', chapters: [
+        { title: 'Vorbereiten', steps: [
+          { t: 'USB-Stick abholen', img: 'stream-tv-01', d: 'Hole den USB-Stick ab.' },
+          { t: 'USB-Stick einstecken', img: 'stream-tv-02', d: 'Stecke den USB-Stick auf der Rückseite des Fernsehers in den USB-Anschluss.' },
+          { t: 'Fernbedienung nehmen', img: 'stream-tv-03', d: 'Nimm die Fernbedienung des Fernsehers.' },
+          { t: 'Fernseher einschalten und SOURCE drücken', img: 'stream-tv-04', d: 'Schalte den Fernseher mit der roten Taste ein (1). Drücke danach auf der Fernbedienung die Taste <strong>SOURCE</strong> (2).' }
+        ]},
+        { title: 'Video öffnen', steps: [
+          { t: 'USB – USB DISK auswählen', img: 'stream-tv-05', d: 'Wähle als Quelle <strong>USB – USB DISK</strong> aus.' },
+          { t: 'Inhaltstyp „Alle“ wählen', img: 'stream-tv-06', d: 'Wähle als Inhaltstyp <strong>Alle</strong> aus.' },
+          { t: 'Ordner und Video öffnen', img: 'stream-tv-07', d: 'Öffne den Ordner <strong>„LWI Aarau“</strong> (1) und starte darin das Video <strong>„LWI-Fernseher“</strong> (2).' }
+        ]},
+        { title: 'Dauerschleife einstellen', ready: 'Das Video läuft und wiederholt sich automatisch.', steps: [
+          { t: 'Einstellungen öffnen', img: 'stream-tv-08', d: 'Drücke die <strong>OK-/Eingabe-Taste</strong>. Navigiere danach nach rechts zum <strong>Einstellungs-Symbol</strong> (Zahnrad).' },
+          { t: '„Wiederholen“ auswählen', img: 'stream-tv-09', d: 'Wähle im Menü <strong>Wiederholen</strong> aus.' },
+          { t: '„Alle wiederholen“ auswählen', img: 'stream-tv-10', d: 'Wähle <strong>Alle wiederholen</strong> aus.' }
+        ]},
+        { title: 'Abschluss', steps: [
+          { t: 'Alarm stellen und Stick entfernen', img: 'stream-tv-11', d: 'Stelle einen Alarm für <strong>16:00 Uhr</strong> und entferne danach den USB-Stick wieder.' }
+        ]}
+      ]}
+    ]
+  },
+  'sound-mix': {
+    cat: 'sound',
+    title: 'Sound Mix Setup',
+    sub: 'Mixer einschalten, Mikrofone benennen und einrichten, danach alles in der richtigen Reihenfolge ausschalten.',
+    pdf: 'pdf/sound-mix-setup.pdf',
+    cover: 'bilder/sound-04.jpg',
+    phases: [
+      { name: 'Sound Mix Setup', chapters: [
+        { title: 'Einschalten', steps: [
+          { t: 'Hauptschalter kontrollieren', img: 'sound-01', d: 'Kontrolliere, ob der Hauptschalter (Strom für die Anlage) eingeschaltet ist. Wenn nicht, schalte ihn ein.' },
+          { t: 'Mixer-Strom einschalten', img: 'sound-02', d: 'Geh zum Soundmixer und schalte den <strong>zweiten Hauptschalter</strong> für den Mixer ein.' },
+          { t: 'Mixer über I/O einschalten', img: 'sound-03', d: 'Suche hinter dem Mixer den <strong>I/O-Schalter</strong> und schalte den Mixer damit ein. Warte, bis der Mixer vollständig hochgefahren ist.' },
+          { t: 'Szenen öffnen', img: 'sound-04', d: 'Drücke auf der rechten Seite des Mixers auf <strong>„Scenes“</strong>.' },
+          { t: 'Szene für den Gottesdienst laden', img: 'sound-05', d: 'Wähle <strong>„10) Living“</strong> aus. Drücke auf <strong>„Recall“</strong> und beim Pop-up auf <strong>„OK“</strong>.' }
+        ]},
+        { title: 'Namen ändern (Mikrofone 1–4)', steps: [
+          { t: 'Auf Bank 1 / Layer A gehen', img: 'sound-06', d: 'Drücke auf dem Mixer bei <strong>„Bank 1“</strong> den Knopf <strong>„Layer A“</strong>.' },
+          { t: 'Kanal auswählen', img: 'sound-07', d: 'Drücke beim gewünschten Mikrofon-Kanal (z. B. Mikro 1) den <strong>„Sel“</strong>-Knopf.' },
+          { t: 'Namen bearbeiten', img: 'sound-08', d: 'Drücke auf dem Mixer-Bildschirm das Tastatur-Symbol. Wenn das Tastatur-Pop-up erscheint, gib den neuen Namen ein und drücke auf <strong>„Apply“</strong>.' },
+          { t: 'Für Mikrofone 2–4 wiederholen', img: 'sound-09', d: 'Für Mikro 2, 3 und 4 wieder: <strong>„Sel“</strong> drücken → Tastatur → Namen eingeben → <strong>„Apply“</strong>.' }
+        ]},
+        { title: 'Mikrofon-Setup XTUGA A400-H', steps: [
+          { t: 'Mikrofon-Set vorbereiten', img: 'sound-10', d: 'Nimm die <strong>XTUGA A400-H</strong> Mikrofonbox und lege sie auf die Seite. Lege <strong>8 aufgeladene Batterien</strong> bereit.' },
+          { t: 'Receiver und Antennen aufbauen', img: 'sound-11', d: 'Öffne die Mikrofonbox und nimm den Receiver heraus. Stelle ihn auf den Schrank. Nimm die Antennen heraus und stecke sie in den Receiver. Nimm den AC-Adapter aus der Box und stecke ihn in den Receiver.' },
+          { t: 'XLR-Kabel anschliessen', img: ['sound-12a', 'sound-12b'], d: 'Nimm <strong>4 XLR-Kabel</strong> aus der Kabelrolle und stecke sie in den Receiver. Stecke das <strong>„male“ Ende</strong> der XLR-Kabel in der SNAKE-Box ein:', list: [
+            ['Mikrofon Channel 001', '1. gMik1'], ['Mikrofon Channel 002', '2. gMik2'], ['Mikrofon Channel 003', '3. gMik3'], ['Mikrofon Channel 004', '4. 1A-Git']
+          ]},
+          { t: 'Mikrofone vorbereiten', img: 'sound-13', d: 'Nimm die Mikrofone einzeln aus der Box. Schraube sie unten auf, lege je <strong>2 Batterien</strong> ein und schraube sie wieder zu. Lege die Mikrofone sicher in die Box oder stelle sie so auf, dass sie nicht herausfallen.' },
+          { t: 'Receiver einschalten und Kanäle prüfen', img: 'sound-14', d: 'Schalte den Receiver über den Knopf ein. Teste, ob die Kanäle Signal liefern. Falls die Kanäle stumm sind, geh zum Mixer und schalte sie dort wieder laut (entstummen).' }
+        ]},
+        { title: 'Ausschalten', steps: [
+          { t: 'Szene Mino laden und Panik ausführen', img: 'sound-15', d: 'Drücke auf dem Mixer auf <strong>„Scenes“</strong> und wähle <strong>„1) Mino V4.0“</strong> aus. Drücke auf <strong>„Recall“</strong> und beim Pop-up auf <strong>„OK“</strong>. Drücke dann auf <strong>„Panik“</strong> und kontrolliere, dass alle Kanäle stumm sind.' },
+          { t: 'Mixer herunterfahren', img: 'sound-16', d: 'Geh zum I/O-Schalter hinter dem Mixer und schalte ihn aus. Auf dem Mixer-Bildschirm sollte <strong>„Processing shutdown“</strong> erscheinen.' },
+          { t: 'Strom ausschalten (Reihenfolge beachten)', img: 'sound-17', d: 'Erst wenn „Processing shutdown“ angezeigt wird: Schalte zuerst den <strong>zweiten Hauptschalter</strong> (Mixer-Strom) aus, danach den <strong>ersten Hauptschalter</strong>.' }
+        ]}
+      ]}
+    ]
+  },
+  'light-op': {
+    cat: 'light',
+    title: 'Light OP Setup',
+    sub: 'Lichtsteuerung einschalten, mit dem iPad bedienen und danach wieder ausschalten.',
+    pdf: 'pdf/light-op-setup.pdf',
+    cover: 'bilder/light-03.jpg',
+    phases: [
+      { name: 'Light OP Setup', chapters: [
+        { title: 'Einschalten', ready: 'Die Lichtsteuerung ist aktiv und die Photon-App ist offen.', steps: [
+          { t: 'Hauptschalter einschalten', img: 'light-01', d: 'Kontrolliere, ob alle Schalter mit einem <strong>gelben Punkt</strong> eingeschaltet sind. Falls nicht, schalte alle diese Schalter ein.' },
+          { t: 'Schlüsselschalter auf „I“ drehen', img: 'light-02', d: 'Drehe den Schlüssel bei der DMX-Steuerung auf Stellung <strong>I</strong>. Die Lichter sollten nun ausgehen.' },
+          { t: 'Blackout deaktivieren', img: 'light-03', d: 'Drücke den <strong>Blackout</strong>-Knopf an der Lichtkonsole. Jetzt ist die Lichtsteuerung aktiv.' },
+          { t: 'iPad öffnen', img: 'light-04', d: 'Nimm das mit <strong>„Licht“</strong> beschriftete iPad und öffne die <strong>Photon</strong>-App.' }
+        ]},
+        { title: 'Licht steuern', steps: [
+          { t: 'MSCI Pre-Set öffnen', img: 'light-05', d: 'Öffne auf dem iPad das <strong>MSCI</strong> Pre-Set. Danach stehen alle Lichtfunktionen zur Verfügung.' },
+          { t: 'Fader verwenden', img: 'light-06', d: 'Alle Fader sind nach ihrer Funktion beschriftet. Mit den Fadern steuerst du die einzelnen Lichter.' },
+          { t: 'Bühne / FOH', img: 'light-07', d: 'Der Fader <strong>„Bühne FOH“</strong> beleuchtet die Treppe vor der Bühne. Verwende ihn bei Bedarf, um den Bühnenbereich auszuleuchten.' }
+        ]},
+        { title: 'Ausschalten', ready: 'Der Schlüssel steht auf „0“, der Blackout bleibt deaktiviert.', steps: [
+          { t: 'Schlüsselschalter ausschalten', img: 'light-08', d: 'Drehe den Schlüssel nach dem Gebrauch auf Position <strong>„0“</strong>. Damit ist die Lichtsteuerung richtig ausgeschaltet. Lass den Blackout deaktiviert.' }
+        ]}
+      ]}
+    ]
+  }
+};
+
+/* ---------- Hilfsfunktionen ---------- */
+const $app = document.getElementById('app');
+const catById = id => CATEGORIES.find(c => c.id === id);
+const stepsOf = g => g.phases.flatMap(p => p.chapters.flatMap(c => c.steps));
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+function loadDone(id) {
+  try { return new Set(JSON.parse(localStorage.getItem('done:' + id) || '[]')); } catch (e) { return new Set(); }
+}
+function saveDone(id, set) {
+  try { localStorage.setItem('done:' + id, JSON.stringify([...set])); } catch (e) {}
+}
+
+function go(hash) {
+  if (location.hash.slice(1) === hash) render(); else location.hash = hash;
+}
+
+function crumbs(parts) {
+  const backTo = parts.length > 1 ? parts[parts.length - 2].hash : '';
+  const trail = parts.map(p => `<span class="sep">/</span><span class="here">${esc(p.label)}</span>`).join('');
+  return `<nav class="crumbs"><button class="back" data-go="${backTo}">${BACK} Zurück</button>${trail}</nav>`;
+}
+
+/* ---------- Ansichten ---------- */
+function renderStart() {
+  const strips = CATEGORIES.map(c => {
+    const n = c.guides.length;
+    return `<button class="strip cat-${c.id}" data-go="${c.id}" aria-label="${esc(c.name)} öffnen">
+      <div class="strip-top">
+        <span class="strip-icon">${ICONS[c.id]}</span>
+        <span class="led ${n ? '' : 'off'}"><i></i>${n ? 'Bereit' : 'Bald'}</span>
+      </div>
+      <div>
+        <div class="strip-name">${esc(c.name)}</div>
+        <div class="strip-blurb">${esc(c.blurb)}</div>
+      </div>
+      <div class="strip-foot"><span>${n ? `<b>${n}</b> Anleitung${n > 1 ? 'en' : ''}` : 'Noch leer'}</span>${ARROW}</div>
+    </button>`;
+  }).join('');
+  return `<header class="intro">
+      <span class="eyebrow">Technikpult</span>
+      <h1>Was machst du heute?</h1>
+      <p>Wähle deinen Bereich. Danach siehst du die passende Anleitung Schritt für Schritt mit Fotos.</p>
+    </header>
+    <section class="desk">${strips}</section>`;
+}
+
+function renderCategory(cat) {
+  const cards = cat.guides.map(id => {
+    const g = GUIDES[id];
+    const steps = stepsOf(g).length;
+    const done = loadDone(id).size;
+    const phases = g.phases.length > 1 ? g.phases.map(p => `<span class="chip">${esc(p.name)}</span>`).join('') : '';
+    return `<button class="guide-card" data-go="${id}">
+      <img src="${g.cover}" alt="" loading="lazy">
+      <div>
+        <h3>${esc(g.title)}</h3>
+        <p>${esc(g.sub)}</p>
+        <div class="meta"><span class="chip">${steps} Schritte</span>${done ? `<span class="chip">${done} erledigt</span>` : ''}${phases}</div>
+      </div>
+      <span class="go">${ARROW}</span>
+    </button>`;
+  }).join('');
+  const empty = `<div class="empty">
+      <h3>Noch keine ${esc(cat.name)}-Anleitung</h3>
+      <p>Sobald die Anleitung als PDF da ist, erscheint sie hier.</p>
+    </div>`;
+  return `${crumbs([{ label: 'Start', hash: '' }, { label: cat.name, hash: cat.id }])}
+    <header class="cat-head">
+      <span class="strip-icon">${ICONS[cat.id]}</span>
+      <div><span class="eyebrow">Bereich</span><h1>${esc(cat.name)}</h1><p>${esc(cat.blurb)}</p></div>
+    </header>
+    <section class="guide-list">${cat.guides.length ? cards : empty}</section>`;
+}
+
+function renderGuide(id) {
+  const g = GUIDES[id];
+  const cat = catById(g.cat);
+  const done = loadDone(id);
+  let n = 0, ch = 0;
+  const phases = g.phases.map((p, pi) => {
+    const chapters = p.chapters.map(c => {
+      ch++;
+      const steps = c.steps.map(s => {
+        n++;
+        const isDone = done.has(n);
+        const imgs = [].concat(s.img).map(img => `<button class="step-img" data-zoom="bilder/${img}.jpg" data-cap="${n}. ${esc(s.t)}" aria-label="Bild zu Schritt ${n} vergrössern">
+            <img src="bilder/${img}.jpg" alt="Foto zu Schritt ${n}: ${esc(s.t)}" loading="lazy"><span class="zoom">${ZOOM}</span>
+          </button>`).join('');
+        const list = s.list ? `<ul class="map">${s.list.map(([a, b]) => `<li><span>${esc(a)}</span>${ARROW}<b>${esc(b)}</b></li>`).join('')}</ul>` : '';
+        return `<article class="step${isDone ? ' done' : ''}" data-step="${n}">
+          ${Array.isArray(s.img) ? `<div class="step-imgs">${imgs}</div>` : imgs}
+          <div class="step-body">
+            <div class="step-title"><span class="step-no">${n}</span><h3>${esc(s.t)}</h3></div>
+            <p>${s.d}</p>${list}
+            <button class="check" data-toggle="${n}" aria-pressed="${isDone}"><span class="box">${TICK}</span><span class="lbl">${isDone ? 'Erledigt' : 'Als erledigt markieren'}</span></button>
+          </div>
+        </article>`;
+      }).join('');
+      const ready = c.ready ? `<div class="ready"><span class="eyebrow">Fertig, wenn</span><span>${esc(c.ready)}</span></div>` : '';
+      return `<section class="chapter" id="ch-${ch}"><h2><span class="num">${String(ch).padStart(2, '0')}</span>${esc(c.title)}</h2>${steps}${ready}</section>`;
+    }).join('');
+    return `<div class="phase" id="phase-${pi}"><div class="phase-label"><span class="eyebrow">${esc(p.name)}</span></div>${chapters}</div>`;
+  }).join('');
+  const total = n;
+  const chapterNames = g.phases.flatMap(p => p.chapters.map(c => c.title));
+  const phaseNav = g.phases.length > 1
+    ? `<div class="phases">${g.phases.map((p, i) => `<button class="phase-btn" data-jump="phase-${i}">${esc(p.name)}</button>`).join('')}</div>`
+    : chapterNames.length > 1
+      ? `<div class="phases">${chapterNames.map((t, i) => `<button class="phase-btn" data-jump="ch-${i + 1}">${esc(t)}</button>`).join('')}</div>` : '';
+  return `${crumbs([{ label: 'Start', hash: '' }, { label: cat.name, hash: cat.id }, { label: g.title, hash: id }])}
+    <header class="guide-head">
+      <span class="eyebrow">${esc(cat.name)} · ${total} Schritte</span>
+      <h1>${esc(g.title)}</h1>
+      <p>${esc(g.sub)}</p>
+      <div class="guide-actions">
+        <a class="btn" href="${g.pdf}" target="_blank" rel="noopener">${DOC} Original-PDF öffnen</a>
+        <button class="btn" data-reset>${RESET} Haken zurücksetzen</button>
+      </div>
+    </header>
+    <div class="progress">
+      <div class="progress-row"><div class="bar"><span id="bar"></span></div><span class="count" id="count"></span></div>
+      ${phaseNav}
+    </div>
+    ${phases}
+    <div class="finish">
+      <div><h3>Geschafft?</h3><p>Wenn alle Schritte erledigt sind, kannst du die Haken für das nächste Mal zurücksetzen.</p></div>
+      <button class="btn" data-reset>${RESET} Haken zurücksetzen</button>
+    </div>`;
+}
+
+function updateProgress(id) {
+  const total = stepsOf(GUIDES[id]).length;
+  const done = loadDone(id).size;
+  const bar = document.getElementById('bar');
+  if (!bar) return;
+  bar.style.width = (done / total * 100) + '%';
+  document.getElementById('count').textContent = `${done} / ${total} erledigt`;
+}
+
+function render() {
+  const h = decodeURIComponent(location.hash.slice(1));
+  let html, catId = '';
+  if (GUIDES[h]) { html = renderGuide(h); catId = GUIDES[h].cat; }
+  else if (catById(h)) { html = renderCategory(catById(h)); catId = h; }
+  else html = renderStart();
+  $app.className = 'wrap view' + (catId ? ' cat-' + catId : '');
+  $app.innerHTML = html;
+  void $app.offsetWidth;
+  if (GUIDES[h]) updateProgress(h);
+  window.scrollTo(0, 0);
+}
+
+/* ---------- Bedienung ---------- */
+$app.addEventListener('click', e => {
+  const t = e.target.closest('[data-go],[data-toggle],[data-reset],[data-zoom],[data-jump]');
+  if (!t) return;
+  const id = decodeURIComponent(location.hash.slice(1));
+  if (t.hasAttribute('data-go')) return go(t.dataset.go);
+  if (t.dataset.jump) return document.getElementById(t.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (t.dataset.zoom) return openLightbox(t.dataset.zoom, t.dataset.cap);
+  if (t.dataset.toggle) {
+    const n = Number(t.dataset.toggle);
+    const set = loadDone(id);
+    set.has(n) ? set.delete(n) : set.add(n);
+    saveDone(id, set);
+    const card = t.closest('.step');
+    const on = set.has(n);
+    card.classList.toggle('done', on);
+    t.setAttribute('aria-pressed', on);
+    t.querySelector('.lbl').textContent = on ? 'Erledigt' : 'Als erledigt markieren';
+    updateProgress(id);
+    return;
+  }
+  if (t.hasAttribute('data-reset')) {
+    saveDone(id, new Set());
+    $app.querySelectorAll('.step.done').forEach(el => {
+      el.classList.remove('done');
+      const b = el.querySelector('.check');
+      b.setAttribute('aria-pressed', 'false');
+      b.querySelector('.lbl').textContent = 'Als erledigt markieren';
+    });
+    updateProgress(id);
+  }
+});
+
+const lb = document.getElementById('lightbox');
+function openLightbox(src, cap) {
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-cap').textContent = cap || '';
+  lb.hidden = false;
+  document.getElementById('lb-close').focus();
+}
+function closeLightbox() { lb.hidden = true; }
+lb.addEventListener('click', closeLightbox);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !lb.hidden) closeLightbox(); });
+
+window.addEventListener('hashchange', render);
+render();
+</script>
