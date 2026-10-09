@@ -388,6 +388,12 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 }
 .step-img.loaded::before, .step-img.failed::before { display: none; }
 .step-img img { position: relative; z-index: 2; display: block; width: 100%; height: 100%; max-height: 300px; object-fit: contain; transition: opacity .2s ease; }
+.step-img.failed img { visibility: hidden; }
+.photo-frame { min-width: 0; }
+.step-imgs .photo-frame { min-width: 0; }
+.image-error { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 4px; font-size: 14px; }
+.image-error button { min-height: 40px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-weight: 700; cursor: pointer; }
+.image-error button:hover { border-color: var(--c); }
 .step-img .zoom {
   position: absolute; z-index: 3; right: 8px; bottom: 8px;
   width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center;
@@ -894,9 +900,12 @@ function renderGuide(id) {
       const steps = c.steps.map(s => {
         n++;
         const isDone = done.has(n);
-        const imgs = [].concat(s.img).map(img => `<button class="step-img${IMAGE_SIZES[img][1] > IMAGE_SIZES[img][0] ? ' portrait' : ''}" style="--step-image: url('bilder/${img}.jpg')" data-zoom="bilder/${img}.jpg" data-cap="${n}. ${esc(s.t)}" aria-label="Bild zu Schritt ${n} vergrössern">
-            <img src="bilder/${img}.jpg" alt="Foto zur Anleitung: ${esc(s.t)}" loading="lazy" width="${IMAGE_SIZES[img][0]}" height="${IMAGE_SIZES[img][1]}"><span class="zoom">${ZOOM}</span>
-          </button>`).join('');
+        const imgs = [].concat(s.img).map(img => `<div class="photo-frame">
+            <button class="step-img${IMAGE_SIZES[img][1] > IMAGE_SIZES[img][0] ? ' portrait' : ''}" style="--step-image: url('bilder/${img}.jpg')" data-zoom="bilder/${img}.jpg" data-cap="${n}. ${esc(s.t)}" aria-label="Bild zu Schritt ${n} vergrössern">
+              <img src="bilder/${img}.jpg" data-original-src="bilder/${img}.jpg" alt="Foto zur Anleitung: ${esc(s.t)}" loading="lazy" width="${IMAGE_SIZES[img][0]}" height="${IMAGE_SIZES[img][1]}"><span class="zoom">${ZOOM}</span>
+            </button>
+            <div class="image-error" role="status" hidden><span>Bild konnte nicht geladen werden.</span><button type="button" data-retry-image>Erneut laden</button></div>
+          </div>`).join('');
         const list = s.list ? `<ul class="map">${s.list.map(([a, b]) => `<li><span>${esc(a)}</span>${ARROW}<b>${esc(b)}</b></li>`).join('')}</ul>` : '';
         return `<article class="step${isDone ? ' done' : ''}" id="step-${n}" data-step="${n}">
           <div class="step-media">${Array.isArray(s.img) ? `<div class="step-imgs">${imgs}</div>` : imgs}${s.note ? `<p class="img-note">${esc(s.note)}</p>` : ''}</div>
@@ -1037,12 +1046,24 @@ function render() {
 
 /* ---------- Bedienung ---------- */
 $app.addEventListener('click', e => {
-  const t = e.target.closest('[data-go],[data-toggle],[data-reset],[data-zoom],[data-jump],[data-continue],[data-undo-reset],[data-copy-step]');
+  const t = e.target.closest('[data-go],[data-toggle],[data-reset],[data-zoom],[data-jump],[data-continue],[data-undo-reset],[data-copy-step],[data-retry-image]');
   if (!t) return;
   const id = decodeURIComponent(location.hash.slice(1));
   if (t.dataset.resume) resumeGuideId = t.dataset.resume;
   if (t.hasAttribute('data-go')) return go(t.dataset.go);
   if (t.dataset.jump) return document.getElementById(t.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (t.hasAttribute('data-retry-image')) {
+    const frame = t.closest('.photo-frame');
+    const image = frame.querySelector('img');
+    const retry = new URL(image.dataset.originalSrc, location.href);
+    retry.searchParams.set('retry', Date.now());
+    frame.classList.remove('failed');
+    frame.querySelector('.step-img').classList.remove('failed');
+    frame.querySelector('.step-img').disabled = false;
+    frame.querySelector('.image-error').hidden = true;
+    image.src = retry.href;
+    return;
+  }
   if (t.dataset.zoom) return openLightbox(t.dataset.zoom, t.dataset.cap);
   if (t.hasAttribute('data-copy-step')) return copyStepLink(t);
   if (t.hasAttribute('data-continue')) return scrollToNextOpen(id);
@@ -1086,10 +1107,20 @@ $app.addEventListener('input', e => {
   if (e.target.id === 'guide-search') renderSearchResults(e.target.value);
 });
 $app.addEventListener('load', e => {
-  if (e.target.matches('.step-img img') && e.target.naturalWidth) e.target.closest('.step-img').classList.add('loaded');
+  if (e.target.matches('.step-img img') && e.target.naturalWidth) {
+    const frame = e.target.closest('.photo-frame');
+    frame.classList.remove('failed');
+    frame.querySelector('.step-img').classList.add('loaded');
+  }
 }, true);
 $app.addEventListener('error', e => {
-  if (e.target.matches('.step-img img')) e.target.closest('.step-img').classList.add('failed');
+  if (e.target.matches('.step-img img')) {
+    const frame = e.target.closest('.photo-frame');
+    frame.classList.add('failed');
+    frame.querySelector('.step-img').classList.add('failed');
+    frame.querySelector('.step-img').disabled = true;
+    frame.querySelector('.image-error').hidden = false;
+  }
 }, true);
 
 const lb = document.getElementById('lightbox');
