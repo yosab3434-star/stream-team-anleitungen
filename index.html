@@ -19,7 +19,7 @@
   --ok-bg: #e5f4ec;
   --proj: #d9560a;
   --stream: #d42a3a;
-  --sound: #148a6b;
+  --sound: #5146c8;
   --light: #a87400;
   --shadow: 0 1px 2px rgba(22, 26, 34, .06), 0 6px 20px rgba(22, 26, 34, .06);
   --f-display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
@@ -30,7 +30,7 @@
   :root:not([data-theme="light"]) {
     --bg: #0e1116; --surface: #171b22; --surface-2: #1d222b; --ink: #eceff4; --muted: #9aa3b2;
     --line: #2a313c; --ok: #4cc488; --ok-bg: #14271e;
-    --proj: #ff8a3d; --stream: #ff5a66; --sound: #3fcf9f; --light: #f2c14e;
+    --proj: #ff8a3d; --stream: #ff5a66; --sound: #a79bff; --light: #f2c14e;
     --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .25);
     color-scheme: dark;
   }
@@ -38,7 +38,7 @@
 :root[data-theme="dark"] {
   --bg: #0e1116; --surface: #171b22; --surface-2: #1d222b; --ink: #eceff4; --muted: #9aa3b2;
   --line: #2a313c; --ok: #4cc488; --ok-bg: #14271e;
-  --proj: #ff8a3d; --stream: #ff5a66; --sound: #3fcf9f; --light: #f2c14e;
+  --proj: #ff8a3d; --stream: #ff5a66; --sound: #a79bff; --light: #f2c14e;
   --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .25);
   color-scheme: dark;
 }
@@ -296,6 +296,7 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
   font: 700 15px/1 var(--f-mono); font-variant-numeric: tabular-nums;
 }
 .step.done .step-no { background: var(--ok); }
+.step-no svg { width: 18px; height: 18px; }
 .step-title h3 { padding-top: 6px; }
 .step-body p { margin: 0; }
 .step-body strong { font-weight: 700; }
@@ -632,7 +633,7 @@ function renderGuide(id) {
         return `<article class="step${isDone ? ' done' : ''}" data-step="${n}">
           ${Array.isArray(s.img) ? `<div class="step-imgs">${imgs}</div>` : imgs}
           <div class="step-body">
-            <div class="step-title"><span class="step-no">${n}</span><h3>${esc(s.t)}</h3></div>
+            <div class="step-title"><span class="step-no" aria-label="${isDone ? `Schritt ${n} erledigt` : `Schritt ${n}`}">${isDone ? TICK : n}</span><h3>${esc(s.t)}</h3></div>
             <p>${s.d}</p>${list}
             <button class="check" data-toggle="${n}" aria-pressed="${isDone}"><span class="box">${TICK}</span><span class="lbl">${isDone ? 'Erledigt' : 'Als erledigt markieren'}</span></button>
           </div>
@@ -710,6 +711,9 @@ $app.addEventListener('click', e => {
     card.classList.toggle('done', on);
     t.setAttribute('aria-pressed', on);
     t.querySelector('.lbl').textContent = on ? 'Erledigt' : 'Als erledigt markieren';
+    const number = card.querySelector('.step-no');
+    number.innerHTML = on ? TICK : n;
+    number.setAttribute('aria-label', on ? `Schritt ${n} erledigt` : `Schritt ${n}`);
     updateProgress(id);
     return;
   }
