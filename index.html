@@ -234,6 +234,11 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 .guide-head p { margin: 0; color: var(--muted); }
 .guide-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .guide-actions .btn { padding: 5px 8px; border-color: transparent; background: transparent; font-size: 14px; }
+.embedded-pdf { margin: 0 0 24px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.embedded-pdf h2 { margin-bottom: 6px; }
+.embedded-pdf p { margin: 6px 0 0; color: var(--muted); font-size: 15px; }
+.embedded-pdf iframe { display: block; width: 100%; height: min(78vh, 900px); min-height: 480px; margin-top: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); }
+@media (max-width: 520px) { .embedded-pdf { padding: 10px; } .embedded-pdf iframe { height: 70vh; min-height: 420px; } }
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 9px 14px; border-radius: 10px;
@@ -959,10 +964,15 @@ function renderGuide(id) {
       <p class="storage-note" id="storage-note" role="status"></p>
       <div class="guide-actions">
         <a class="btn" href="${g.pdf}" target="_blank" rel="noopener">${DOC} Original-PDF öffnen</a>
-        ${g.obsPdf ? `<a class="btn" href="${g.obsPdf}" target="_blank" rel="noopener">${DOC} OBS-Live-Broadcast-PDF öffnen</a>` : ''}
         <button class="btn" data-reset${done.size ? '' : ' hidden'}>${RESET} Haken zurücksetzen</button>
       </div>
     </header>
+    ${g.obsPdf ? `<section class="embedded-pdf" aria-labelledby="obs-pdf-heading">
+      <h2 id="obs-pdf-heading">Zweite Anleitung: OBS / YouTube-Liveübertragung</h2>
+      <p>Dieser Abschnitt behandelt die Liveübertragung. Die Schritte darunter beschreiben die Wiedergabe eines Videos über Fernseher und USB-Stick.</p>
+      <iframe src="${g.obsPdf}" title="OBS-Live-Broadcast-Anleitung als PDF" loading="lazy"></iframe>
+      <p><a href="${g.obsPdf}" target="_blank" rel="noopener">PDF in einem neuen Tab öffnen</a></p>
+    </section>` : ''}
     <div class="progress">
       <div class="progress-row"><div class="bar"><span id="bar"></span></div><span class="count" id="count"></span></div>
       <div class="next-step" id="next-step"></div>
