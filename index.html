@@ -233,6 +233,7 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 .guide-head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-bottom: 18px; }
 .guide-head .eyebrow { color: var(--c); }
 .guide-head p { margin: 0; color: var(--muted); }
+.guide-head .stream-permission > p:first-child { color: var(--ink); }
 .guide-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .guide-actions .btn { padding: 5px 8px; border-color: transparent; background: transparent; font-size: 14px; }
 .stream-permission { margin: 0 0 16px; padding: 14px 16px; border: 2px solid var(--stream); border-radius: 12px; background: var(--surface); font-weight: 700; }
@@ -515,10 +516,32 @@ const IMAGE_SIZES = {
   'stream-tv-05': [890, 623], 'stream-tv-06': [889, 623], 'stream-tv-07': [895, 628], 'stream-tv-08': [889, 628],
   'stream-tv-09': [890, 628], 'stream-tv-10': [889, 628], 'stream-tv-11': [878, 623]
 };
+const STREAM_SETUP_IMAGE_SIZES = {
+  'table-clear': [763, 474], 'laptop-place': [362, 478], 'laptop-power': [763, 472],
+  'hdmi-unroll': [536, 476], 'hdmi-laptop': [564, 474],
+  'deck-unplug': [598, 476], 'deck-connect': [761, 476], 'deck-check': [761, 480],
+  'mino-cover': [626, 444], 'mino-power': [622, 444], 'capture-usbc': [626, 444], 'canon-hdmi': [622, 444],
+  'obs-mino-scene': [649, 480], 'obs-sandberg': [761, 478], 'obs-capture-reset': [761, 478],
+  'audio-adapter': [761, 480], 'audio-hub': [761, 476], 'goxlr-mic': [761, 480],
+  'tripod': [574, 444], 'video-ninja-guest': [622, 444], 'video-ninja-join': [574, 444], 'phone-landscape': [622, 444],
+  'obs-audio-properties': [622, 444], 'obs-audio-device': [626, 444], 'obs-audio-signal': [622, 444],
+  'multiview-menu': [763, 474], 'multiview-fullscreen': [763, 476], 'multiview-monitor': [763, 480],
+  'director-open': [626, 444], 'director-join': [622, 444], 'camera1-link': [626, 446],
+  'camera1-source': [622, 446], 'camera-scenes': [517, 444],
+  'virtual-camera': [624, 444], 'video-ninja-settings': [622, 444], 'obs-virtual-camera': [624, 444],
+  'director-feed-link': [622, 444], 'test-select': [624, 444], 'test-link': [622, 444],
+  'existing-broadcast': [624, 444], 'select-existing': [622, 444], 'choose-broadcast': [624, 444],
+  'confirm-broadcast': [622, 444], 'intro-scene': [624, 431], 'intro-audio': [622, 431],
+  'start-live': [624, 446], 'mute-intro': [626, 450], 'unmute-live': [622, 450]
+};
+const streamSetupImage = (name, alt) => {
+  const [width, height] = STREAM_SETUP_IMAGE_SIZES[name];
+  return { src: `bilder/stream-setup-${name}.jpg`, width, height, alt };
+};
 
 const CATEGORIES = [
   { id: 'projektion', name: 'Projektion', blurb: 'Beamer, Leinwand, FreeShow und BibleShow', guides: ['projektion-beamer'] },
-  { id: 'stream', name: 'Stream', blurb: 'Fernseher, Videos und Übertragung', guides: ['stream-tv-video', 'stream-obs-live'] },
+  { id: 'stream', name: 'Stream', blurb: 'Fernseher, Videos und Übertragung', guides: ['stream-tv-video', 'stream-obs-live', 'stream-setup'] },
   { id: 'sound', name: 'Sound', blurb: 'Mixer, Szenen und Funkmikrofone', guides: ['sound-mix'] },
   { id: 'light', name: 'Light', blurb: 'Lichtkonsole, iPad und Photon-App', guides: ['light-op'] }
 ];
@@ -659,6 +682,118 @@ const GUIDES = {
           { t: 'Programmbild in OBS kontrollieren', d: 'Kontrolliere rechts im <strong>Program</strong>-Fenster das Bild, das ausgegeben werden soll. Am Ende des Videos ist dort <strong>Start / Intro</strong> sichtbar. Ein schwarzes Bild oder Ladesymbol ist kein fertiges Startbild.' },
           { t: 'Geplante Übertragung sowie Bild und Ton prüfen', d: 'Prüfe mit der verantwortlichen Person den richtigen geplanten Broadcast sowie Bild und Ton. Bewegte Tonbalken allein bestätigen noch nicht, dass beim Publikum alles richtig ankommt.' },
           { t: 'Stream-Erlaubnis vor dem Live-Start einholen', d: 'Frage immer zuerst Yosab, Elijah oder Yoas, ob du streamen darfst. Starte den Stream erst, wenn eine dieser Personen ausdrücklich Ja gesagt hat. Ohne Antwort oder bei Unsicherheit: nicht starten und nochmals nachfragen. Für eine vollständige Fortsetzung fehlt in der bereitgestellten Anleitung eine Aufnahme vom erfolgreichen Auswählen, Live-Start und der Kontrolle auf YouTube.' }
+        ]}
+      ]}
+    ]
+  },
+  'stream-setup': {
+    cat: 'stream',
+    title: 'Stream Setup – Aufbau und Livebetrieb',
+    sub: 'Zusätzliche Schritte für den Stream-Laptop, Kameras, Ton, Video Ninja und den Livebetrieb.',
+    pdf: 'pdf/Stream-Setup-ohne-Dopplungen.pdf',
+    cover: 'bilder/stream-setup-laptop-place.jpg',
+    coverSize: STREAM_SETUP_IMAGE_SIZES['laptop-place'],
+    coverAlt: 'Stream-Laptop steht auf dem freigeräumten Platz am Technikpult.',
+    phases: [
+      { name: 'Aufbau', chapters: [
+        { title: 'Tisch und Laptop vorbereiten', steps: [
+          { t: 'Tisch freiräumen', img: streamSetupImage('table-clear', 'Vorher und nachher: Tastatur und Switch Board sind nach hinten geschoben, in der Mitte ist Platz für den Stream-Laptop.'), d: 'Schiebe Tastatur und Switch Board nach hinten. So entsteht in der Mitte des Tisches Platz für den Stream-Laptop.' },
+          { t: 'Stream-Laptop hinstellen', img: streamSetupImage('laptop-place', 'Stream-Laptop steht in der Mitte des freigeräumten Platzes.'), d: 'Stelle den Stream-Laptop in die Mitte des freien Platzes.' },
+          { t: 'Laptop mit Strom verbinden', img: streamSetupImage('laptop-power', 'Laptop-Netzteil wird mit dem Laptop und einer Steckdose verbunden.'), d: 'Stecke das Netzteil in den Laptop und dann in eine Steckdose. Prüfe am Laptop, ob er lädt.' }
+        ]},
+        { title: 'Monitor und OBS vorbereiten', steps: [
+          { t: 'HDMI-Kabel aufrollen', img: streamSetupImage('hdmi-unroll', 'Aufgerolltes HDMI-Kabel hinter dem Monitor.'), d: 'Nimm das zusammengerollte HDMI-Kabel hinter dem Monitor und rolle es vollständig auf.' },
+          { t: 'HDMI-Kabel am Stream-Laptop einstecken', img: streamSetupImage('hdmi-laptop', 'HDMI-Stecker wird in den HDMI-Anschluss des Stream-Laptops gesteckt.'), d: 'Stecke das HDMI-Kabel in den HDMI-Anschluss des Stream-Laptops.' },
+          { t: 'Anzeige erweitern und OBS öffnen', d: 'Stelle die Anzeige am Stream-Laptop auf <strong>Erweitern</strong> und öffne OBS, wie in den vorhandenen Anleitungen erklärt: <a href="#projektion-beamer/step-9">Windows + P / Erweitern in der Projektion-Anleitung</a> und <a href="#stream-obs-live/step-1">OBS öffnen in der OBS-Anleitung</a>.' }
+        ]},
+        { title: 'Stream Deck anschliessen', steps: [
+          { t: 'Stream-Deck-USB vom Monitor abziehen', img: streamSetupImage('deck-unplug', 'USB-Kabel des Stream Decks wird vom Monitor abgezogen.'), d: 'Ziehe den USB-Anschluss des Stream Decks aus dem Monitor.' },
+          { t: 'Stream Deck am Stream-Laptop einstecken', img: streamSetupImage('deck-connect', 'USB-Kabel des Stream Decks wird am Stream-Laptop eingesteckt.'), d: 'Stecke das USB-Kabel des Stream Decks in einen USB-Anschluss am Stream-Laptop.' },
+          { t: 'Funktion des Stream Decks prüfen', img: streamSetupImage('deck-check', 'Stream Deck zeigt seine Szenen auf den Tasten.'), d: 'Prüfe, ob auf dem Stream Deck Szenen auf den Tasten angezeigt werden.' }
+        ]}
+      ]},
+      { name: 'Kameras', chapters: [
+        { title: 'MINO Cam vorbereiten und verbinden', steps: [
+          { t: 'MINO-Cam-Klappe öffnen', img: streamSetupImage('mino-cover', 'Seitliche Klappe der MINO Cam: CLOSE- und OPEN-Position.'), d: 'Schiebe an der Seite der MINO Cam den Schalter von <strong>CLOSE</strong> nach unten auf <strong>OPEN</strong>, um die Klappe zu öffnen.' },
+          { t: 'Kamera einschalten', img: streamSetupImage('mino-power', 'MINO Cam mit aufgeklapptem LCD-Bildschirm und Schalter zwischen OFF und CAMERA.'), d: 'Klappe den LCD-Bildschirm auf. Schiebe den Schalter von <strong>OFF</strong> nach links auf <strong>CAMERA</strong>.' },
+          { t: 'Capture Card anschliessen', img: streamSetupImage('capture-usbc', 'Sandberg HDMI Capture Card und USB-C-Anschluss am Stream-Laptop.'), d: 'Hole die <strong>Sandberg HDMI Capture Card</strong> aus der Materialbox. Stecke sie in den USB-C-Anschluss des Stream-Laptops.' },
+          { t: 'Canon-HDMI-Kabel zur Capture Card führen', img: streamSetupImage('canon-hdmi', 'Mit Canon markiertes HDMI-Kabel wird an der Capture Card angeschlossen.'), d: 'Gehe zum Blackmagic Mini Converter. Ziehe dort das mit <strong>Canon</strong> markierte HDMI-Kabel heraus. Führe es bis zum Stream-Laptop und stecke es in die Capture Card.' }
+        ]},
+        { title: 'MINO Cam in OBS kontrollieren', steps: [
+          { t: 'MINO-Cam-Szene auswählen', img: streamSetupImage('obs-mino-scene', 'In OBS ist die Szene 5 / MINO Cam ausgewählt.'), d: 'Wähle in OBS Studio die Szene <strong>5 / MINO Cam</strong>.' },
+          { t: 'Sandberg-Quelle prüfen', img: streamSetupImage('obs-sandberg', 'OBS zeigt die Quelle MINO Canon Camera und das Gerät SandbergCapture.'), d: 'Öffne die Quelle <strong>MINO Canon Camera</strong> mit einem Doppelklick. Prüfe, ob als Gerät <strong>SandbergCapture</strong> ausgewählt ist.' },
+          { t: 'Bei fehlendem Bild die Quelle neu aktivieren', img: streamSetupImage('obs-capture-reset', 'OBS-Schaltfläche Deactivate für SandbergCapture.'), d: 'Wenn <strong>SandbergCapture</strong> ausgewählt ist und noch kein Bild erscheint, klicke auf <strong>Deactivate</strong>. Warte fünf Sekunden und klicke wieder auf <strong>Activate</strong>. Prüfe, ob das Kamerabild jetzt sichtbar ist.' }
+        ]}
+      ]},
+      { name: 'Ton', chapters: [
+        { title: 'USB-Soundadapter und GO XLR Mini verbinden', steps: [
+          { t: 'USB-Hub und Soundadapter holen', img: streamSetupImage('audio-adapter', 'USB-Port-Hub und UGREEN USB External Sound Adapter aus der Materialkiste.'), d: 'Hole aus der Materialkiste einen USB-Port-Hub und einen Adapter aus der Schachtel <strong>UGREEN USB External Sound</strong>.' },
+          { t: 'Hub und Soundadapter am Laptop anschliessen', img: streamSetupImage('audio-hub', 'USB-Hub und UGREEN-Soundadapter sind am Stream-Laptop angeschlossen.'), d: 'Stecke den USB-Port-Hub an der rechten Seite des Stream-Laptops ein. Stecke den USB-Soundadapter am Ende des Hubs ein.' },
+          { t: 'AUX-Kabel am roten MIC-Anschluss einstecken', img: streamSetupImage('goxlr-mic', '3,5-mm-AUX-Kabel wird vom GO XLR Mini zum roten MIC-Anschluss des USB-Soundadapters geführt.'), d: 'Gehe zum GO XLR Mini hinter dem Laptop. Ziehe dort das 3,5-mm-AUX-Kabel heraus und stecke es am USB-Soundadapter in den roten Anschluss <strong>MIC</strong>.' }
+        ]}
+      ]},
+      { name: 'Stream-Software', chapters: [
+        { title: 'Handys und Video-Ninja-Raum vorbereiten', steps: [
+          { t: 'Drei Handys und drei Tripods bereitstellen', img: streamSetupImage('tripod', 'Handy ist an einem kleinen Stativ, passend für die drei benötigten Handys und Tripods.'), d: 'Stelle drei Handys und drei Tripods bereit.' },
+          { t: 'Als Gast dem Video-Ninja-Raum beitreten', img: streamSetupImage('video-ninja-guest', 'Video-Ninja-Seite mit Join Room with Camera; das Passwortfeld enthält keine lesbaren Zugangsdaten.'), d: 'Öffne auf den Handys in der WhatsApp-Gruppenbeschreibung den Link mit dem Titel <strong>Guest</strong>. Das Passwort steht im internen Team-Chat. Tippe auf <strong>Join Room with Camera</strong>. Verwende keine Links oder Passwörter aus einer öffentlichen Anleitung.' },
+          { t: 'Kamera erlauben und Rückkamera wählen', img: streamSetupImage('video-ninja-join', 'Video-Ninja-Beitrittsseite mit START und Auswahl der hinteren Kamera.'), d: 'Wenn das Handy fragt, ob Video-Ninja Kamera und Mikrofon verwenden darf, tippe auf <strong>Authorize / Genehmigen</strong>. Wähle die Rückkamera, falls sie nicht bereits ausgewählt ist, und tippe auf <strong>START</strong>.' },
+          { t: 'Handys im Querformat auf den Tripods befestigen', img: streamSetupImage('phone-landscape', 'Handy in Querformat auf dem Stativ; die Video-Ninja-Vorschau zeigt das Kamerabild.'), d: 'Die Kamera muss im Querformat sein. Wenn sich das Bild nicht automatisch dreht, schalte die Ausrichtungssperre des Handys aus. Stelle die Tripods auf und befestige die Handys.' }
+        ]},
+        { title: 'OBS-Mikrofon auswählen und Signal prüfen', steps: [
+          { t: 'Eigenschaften des Mikrofon-/AUX-Audios öffnen', img: streamSetupImage('obs-audio-properties', 'OBS-Audio-Mixer-Menü mit den Eigenschaften für Mikrofon-/AUX-Audio.'), d: 'OBS muss geöffnet sein. Suche im <strong>Audio Mixer</strong> den Kanal <strong>Mikrofon-/AUX-Audio</strong>. Klicke auf die drei Punkte und dann auf <strong>Properties</strong>.' },
+          { t: 'USB-Audiogerät auswählen', img: streamSetupImage('obs-audio-device', 'OBS-Geräteliste mit Microphone (USB Audio Device) ausgewählt.'), d: 'Wähle im Dropdown <strong>Device</strong> den Eintrag <strong>Microphone (USB Audio Device)</strong> und klicke auf <strong>OK</strong>.' },
+          { t: 'Audiosignal kontrollieren', img: streamSetupImage('obs-audio-signal', 'OBS-Audiopegel zeigt ein Signal im Mixer.'), d: 'Lass einen Track abspielen oder verwende ein Mikrofon beziehungsweise Instrument. Prüfe, ob im Audio-Mixer ein Signal angezeigt wird.' }
+        ]},
+        { title: 'Multi-View auf dem Monitor anzeigen', steps: [
+          { t: 'View-Menü öffnen', img: streamSetupImage('multiview-menu', 'OBS-Menü View oben in der Programmleiste.'), d: 'Klicke oben in OBS auf <strong>View</strong>.' },
+          { t: 'Multi-View im Vollbild starten', img: streamSetupImage('multiview-fullscreen', 'OBS-View-Menü mit Multi-view (Full-screen) markiert.'), d: 'Wähle <strong>Multi-view (Full-screen)</strong>.' },
+          { t: 'Monitor für Multi-View auswählen', img: streamSetupImage('multiview-monitor', 'Monitorliste in OBS mit DELL P2419H ausgewählt.'), d: 'Wähle <strong>DELL P2419H: 1920x1080</strong>. Prüfe, ob der Multi-View-Feed auf dem Monitor erscheint.' }
+        ]}
+      ]},
+      { name: 'Video Ninja', chapters: [
+        { title: 'Director öffnen', steps: [
+          { t: 'Video-Ninja-Director-Link öffnen', img: streamSetupImage('director-open', 'Video-Ninja-Director-Seite im Browser mit den Feldern für verbundene Geräte.'), d: 'Öffne Edge und dann den Link mit dem Titel <strong>Director</strong> aus der WhatsApp-Gruppenbeschreibung. Der interne Link steht im Team-Chat; er ist nicht in dieser öffentlichen Anleitung enthalten.' },
+          { t: 'Als Director einwählen', img: streamSetupImage('director-join', 'Video-Ninja-Director-Oberfläche mit verbundenen Geräten.'), d: 'Klicke auf <strong>enable director’s microphone or video</strong>. Prüfe, ob die verbundenen Geräte angezeigt werden, zum Beispiel die drei Handys.' }
+        ]},
+        { title: 'Video-Ninja-Kameras in OBS verknüpfen', steps: [
+          { t: 'Link für Kamera 1 kopieren und OBS-Szene öffnen', img: streamSetupImage('camera1-link', 'Video Ninja zeigt Copy solo view link für Kamera 1 und OBS-Szene 1 / Video Ninja 1.'), d: 'Klicke bei <strong>Kamera 1</strong> in Video Ninja auf <strong>Copy solo view link</strong>. Öffne danach OBS und wähle die Szene <strong>1 / Video Ninja 1</strong>.' },
+          { t: 'Kameralink in OBS einfügen', img: streamSetupImage('camera1-source', 'In OBS ist die Quelle Kamera 1 ausgewählt und das Eingabefeld für den Video-Ninja-Link geöffnet.'), d: 'Doppelklicke in OBS auf die Quelle <strong>Kamera 1</strong> und füge den kopierten Link ins Eingabefeld ein. Warte, bis ein Bild erscheint, und klicke auf <strong>OK</strong>.' },
+          { t: 'Übrige Video-Ninja-Szenen einrichten', img: streamSetupImage('camera-scenes', 'OBS-Szenenliste mit Video Ninja 1, Video Ninja 2, Klavier und weiteren Szenen.'), d: 'Wiederhole den Vorgang für die Szenen <strong>2 / Video Ninja 2</strong>, <strong>Klavier</strong> und <strong>6 Trommel</strong>. Verwende jeweils den passenden internen Video-Ninja-Link aus dem Team-Chat.' }
+        ]},
+        { title: 'OBS-Director-Feed teilen', steps: [
+          { t: 'OBS Virtual Camera starten', img: streamSetupImage('virtual-camera', 'OBS Controls mit Start Virtual Camera hervorgehoben.'), d: 'Klicke in OBS auf <strong>Start Virtual Camera</strong>.' },
+          { t: 'Video-Ninja-Einstellungen öffnen', img: streamSetupImage('video-ninja-settings', 'Video-Ninja-Einstellungs-Schaltfläche im Browser.'), d: 'Öffne Video Ninja und klicke auf <strong>Settings</strong>.' },
+          { t: 'OBS Virtual Camera als Video Source wählen', img: streamSetupImage('obs-virtual-camera', 'Video-Ninja-Videoquellenliste mit OBS Virtual Camera ausgewählt.'), d: 'Wähle bei <strong>Video Source</strong> den Eintrag <strong>OBS Virtual Camera</strong>. Prüfe, ob der OBS-Live-Feed im Director sichtbar ist.' },
+          { t: 'Link des Director-Feeds kopieren', img: streamSetupImage('director-feed-link', 'Video-Ninja-Director mit Copy solo view link für den eigenen Live-Feed.'), d: 'Klicke beim Director-Feed auf <strong>Copy solo view link</strong>. Der kopierte Kamera-Link ist intern und gehört nicht in diese Webseite.' },
+          { t: 'OBS LIVE VIEW im Stream-Team-Chat senden', d: 'Öffne WhatsApp und sende den kopierten Link mit dem Titel <strong>OBS LIVE VIEW</strong> nur im internen Stream-Team-Chat. Das Projektions-Team kann damit den Live-Feed in der Halle zeigen.' }
+        ]}
+      ]},
+      { name: 'Stream vorbereiten', chapters: [
+        { title: 'Optionalen Test-Stream auswählen', notice: 'Ein Test-Stream darf nur nach der ausdrücklichen Erlaubnis von Yosab, Elijah oder Yoas starten. Das Anlegen eines Broadcasts ist in der <a href="#stream-obs-live/step-3">OBS-Broadcast-Anleitung</a> erklärt und wird hier nicht wiederholt. Die Schaltfläche <strong>Create broadcast and start streaming</strong> startet bereits eine Übertragung; nur nach ausdrücklicher Erlaubnis verwenden.', steps: [
+          { t: 'Test-Stream im YouTube Live Control Panel auswählen', img: streamSetupImage('test-select', 'YouTube Live Control Panel mit der Schaltfläche Select stream und einem vorhandenen Test-Stream.'), d: 'Öffne das <strong>YouTube Live Control Panel</strong>. Klicke auf <strong>Select stream</strong> und wähle den Test-Stream aus. Das PDF nennt als Beispiel den Titel <strong>TEST | Gottesdienst</strong> und die Sichtbarkeit <strong>Unlisted</strong>; prüfe, dass es der richtige Test-Stream ist.' },
+          { t: 'Test-Stream-Link kopieren', img: streamSetupImage('test-link', 'YouTube-Studio-Test-Stream mit der Schaltfläche zum Kopieren des Links.'), d: 'Klicke auf den Pfeil zum Teilen beziehungsweise Kopieren des Links.' },
+          { t: 'Test-Stream-Link intern teilen', d: 'Sende den kopierten Link in WhatsApp mit dem Titel <strong>TEST STREAM</strong> nur im dafür vorgesehenen internen Chat. Aktuelle Angaben findest du im internen Team-Chat.' }
+        ]},
+        { title: 'Vorbereiteten Broadcast auswählen', steps: [
+          { t: 'Manage Broadcast öffnen', img: streamSetupImage('existing-broadcast', 'OBS Controls mit Manage Broadcast zum Verwalten einer vorhandenen Übertragung.'), d: 'Klicke in OBS auf <strong>Manage Broadcast</strong>. Das Erstellen oder Bearbeiten des Broadcasts ist in der vorhandenen <a href="#stream-obs-live/step-3">OBS-Broadcast-Anleitung</a> beschrieben.' },
+          { t: 'Select Existing Broadcast wählen', img: streamSetupImage('select-existing', 'OBS-Schaltfläche Select Existing Broadcast ist ausgewählt.'), d: 'Klicke auf <strong>Select Existing Broadcast</strong>.' },
+          { t: 'Den passenden geplanten Broadcast auswählen', img: streamSetupImage('choose-broadcast', 'Liste vorhandener Broadcasts in OBS mit einem geplanten Eintrag.'), d: 'Wähle in der Liste den für den aktuellen Anlass vorbereiteten Broadcast. Prüfe Titel und Termin; im PDF ist der sichtbare Anlass nur ein Beispiel.' },
+          { t: 'Broadcast auswählen und bestätigen', img: streamSetupImage('confirm-broadcast', 'OBS-Schaltfläche Select broadcast zum Bestätigen des ausgewählten Eintrags.'), d: 'Klicke unten auf <strong>Select broadcast</strong>, um den ausgewählten Broadcast zu übernehmen.' }
+        ]}
+      ]},
+      { name: 'Livebetrieb', chapters: [
+        { title: 'Intro vorbereiten', steps: [
+          { t: 'Intro-Szene starten', img: streamSetupImage('intro-scene', 'OBS-Szene Start / Intro ist ausgewählt und die Transition ist markiert.'), d: 'Wähle in OBS die Szene <strong>Start / Intro</strong> und führe die Transition aus.' },
+          { t: 'Ton für das Intro kontrollieren', img: streamSetupImage('intro-audio', 'OBS-Audio-Mixer mit stummgeschaltetem Mikrofon-/AUX-Audio und aktivem Track 2 Stream startet gleich 2.'), d: 'Prüfe im Audio Mixer, ob <strong>Mikrofon-/AUX-Audio</strong> stummgeschaltet ist und <strong>2 Stream startet gleich 2</strong> aktiv ist.' }
+        ]},
+        { title: 'Stream starten', notice: 'Frage immer zuerst Yosab, Elijah oder Yoas, ob du streamen darfst. Ohne ausdrückliche Erlaubnis darfst du keinen Stream starten. Das gilt auch für Test-Streams.', steps: [
+          { t: 'Stream und Aufnahme starten', img: streamSetupImage('start-live', 'OBS Controls mit Start Streaming und Start Recording markiert.'), d: 'Erst nach einem ausdrücklichen Ja klicke in OBS auf <strong>Start Streaming</strong> und auf <strong>Start Recording</strong>. Ohne Antwort oder bei Unsicherheit nicht starten.' }
+        ]},
+        { title: 'Stream-Link intern teilen und zum Live-Ton wechseln', steps: [
+          { t: 'Stream-Link in den vorgesehenen Chats teilen', d: 'Öffne den Stream im Browser und sende den aktuellen Stream-Link in WhatsApp an <strong>Stream Team</strong> und <strong>LWI Aarau Media Team Announcements</strong>. Verwende den aktuellen Link aus dem internen Ablauf; veröffentliche keine internen Kamera-Links.' },
+          { t: 'Vor dem Wechsel vom Intro ins Live-Feed die Audio-Einstellungen anpassen', d: 'Sobald du bereit bist, vom Intro zum Live-Feed zu wechseln, passe die Audio-Einstellungen in den nächsten beiden Schritten an.' },
+          { t: 'Intro-Ton stummschalten', img: streamSetupImage('mute-intro', 'OBS-Audio-Mixer mit stummgeschaltetem Kanal 2 Stream startet gleich 2.'), d: 'Wenn du vom Intro zum Live-Feed wechselst, schalte <strong>2 Stream startet gleich 2</strong> stumm.' },
+          { t: 'Live-Mikrofon aktivieren', img: streamSetupImage('unmute-live', 'OBS-Audio-Mixer mit aktivem Pegel auf Mikrofon-/AUX-Audio.'), d: 'Aktiviere <strong>Mikrofon-/AUX-Audio</strong>, damit der Live-Ton zu hören ist.' }
         ]}
       ]}
     ]
@@ -984,12 +1119,18 @@ function renderGuide(id) {
         n++;
         const isDone = done.has(n);
         const hasImages = Boolean(s.img);
-        const imgs = hasImages ? [].concat(s.img).map(img => `<div class="photo-frame">
-            <button class="step-img${IMAGE_SIZES[img][1] > IMAGE_SIZES[img][0] ? ' portrait' : ''}" style="--step-image: url('bilder/${img}.jpg')" data-zoom="bilder/${img}.jpg" data-cap="${n}. ${esc(s.t)}" aria-label="Bild zu Schritt ${n} vergrössern">
-              <img src="bilder/${img}.jpg" data-original-src="bilder/${img}.jpg" alt="Foto zur Anleitung: ${esc(s.t)}" loading="lazy" width="${IMAGE_SIZES[img][0]}" height="${IMAGE_SIZES[img][1]}"><span class="zoom">${ZOOM}</span>
+        const imgs = hasImages ? [].concat(s.img).map(image => {
+          const custom = typeof image !== 'string';
+          const src = custom ? image.src : `bilder/${image}.jpg`;
+          const [width, height] = custom ? [image.width, image.height] : IMAGE_SIZES[image];
+          const alt = custom ? image.alt : `Foto zur Anleitung: ${s.t}`;
+          return `<div class="photo-frame">
+            <button class="step-img${height > width ? ' portrait' : ''}" style="--step-image: url('${esc(src)}')" data-zoom="${esc(src)}" data-cap="${n}. ${esc(s.t)}" aria-label="Bild zu Schritt ${n} vergrössern">
+              <img src="${esc(src)}" data-original-src="${esc(src)}" alt="${esc(alt)}" loading="lazy" width="${width}" height="${height}"><span class="zoom">${ZOOM}</span>
             </button>
             <div class="image-error" role="status" hidden><span>Bild konnte nicht geladen werden.</span><button type="button" data-retry-image>Erneut laden</button></div>
-          </div>`).join('') : '';
+          </div>`;
+        }).join('') : '';
         const list = s.list ? `<ul class="map">${s.list.map(([a, b]) => `<li><span>${esc(a)}</span>${ARROW}<b>${esc(b)}</b></li>`).join('')}</ul>` : '';
         return `<article class="step${isDone ? ' done' : ''}${hasImages ? '' : ' no-image'}" id="step-${n}" data-step="${n}">
           ${hasImages ? `<div class="step-media">${Array.isArray(s.img) ? `<div class="step-imgs">${imgs}</div>` : imgs}${s.note ? `<p class="img-note">${esc(s.note)}</p>` : ''}</div>` : ''}
@@ -1005,13 +1146,14 @@ function renderGuide(id) {
         </article>`;
       }).join('');
       const ready = c.ready ? `<div class="ready"><span class="eyebrow">Fertig, wenn</span><span>${esc(c.ready)}</span></div>` : '';
+      const notice = c.notice ? `<aside class="stream-permission" aria-label="Wichtiger Hinweis">${c.notice}</aside>` : '';
       const illustration = c.illustration ? `<figure class="chapter-illustration">
         <button type="button" data-zoom="${esc(c.illustration.src)}" data-cap="${esc(c.illustration.caption)}" aria-label="Bild vergrössern: ${esc(c.illustration.alt)}">
           <img src="${esc(c.illustration.src)}" alt="${esc(c.illustration.alt)}" loading="lazy" width="${c.illustration.width}" height="${c.illustration.height}">
         </button>
         <figcaption>${esc(c.illustration.caption)}</figcaption>
       </figure>` : '';
-      return `<section class="chapter" id="ch-${ch}"><h2><span class="num">${String(ch).padStart(2, '0')}</span>${esc(c.title)}</h2>${illustration}${steps}${ready}</section>`;
+      return `<section class="chapter" id="ch-${ch}"><h2><span class="num">${String(ch).padStart(2, '0')}</span>${esc(c.title)}</h2>${notice}${illustration}${steps}${ready}</section>`;
     }).join('');
     return `<div class="phase" id="phase-${pi}"><div class="phase-label"><span class="eyebrow">${esc(p.name)}</span></div>${chapters}</div>`;
   }).join('');
@@ -1024,21 +1166,27 @@ function renderGuide(id) {
   const trail = cat.guides.length === 1
     ? [{ label: 'Start', hash: '' }, { label: g.title, hash: id }]
     : [{ label: 'Start', hash: '' }, { label: cat.name, hash: cat.id }, { label: g.title, hash: id }];
+  const permission = id === 'stream-setup'
+    ? `<aside class="stream-permission" aria-label="Wichtiger Hinweis zur Stream-Erlaubnis">
+        <p>Frage immer zuerst Yosab, Elijah oder Yoas, ob du streamen darfst. Ohne ausdrückliche Erlaubnis darfst du keinen Stream starten. Das gilt auch für Test-Streams.</p>
+        <p>Rote Zahlen in den Bildern sind Markierungen aus der PDF, nicht die neuen Schrittnummern. Aktuelle Angaben findest du im internen Team-Chat. Passwörter und interne Kamera-Links werden hier nicht angezeigt.</p>
+      </aside>`
+    : id === 'stream-obs-live' ? `<aside class="stream-permission" aria-label="Wichtiger Hinweis zur Stream-Erlaubnis">
+        <p>Vor jedem Live-Start zuerst Yosab, Elijah oder Yoas fragen. Nur nach einem ausdrücklichen Ja streamen; ohne Antwort oder bei Unsicherheit nicht starten.</p>
+        <p>Die Haken speichern nur deinen persönlichen Fortschritt. Sie sind keine Erlaubnis. Eine frühere Erlaubnis gilt nicht automatisch für einen neuen Anlass.</p>
+      </aside>` : '';
   return `${crumbs(trail)}
     <header class="guide-head">
       <span class="eyebrow">${esc(cat.name)} · ${total} Schritte</span>
       <h1>${esc(g.title)}</h1>
       <p>${esc(g.sub)}</p>
+      ${permission}
       <p class="storage-note" id="storage-note" role="status"></p>
       <div class="guide-actions">
-        <a class="btn" href="${g.pdf}" target="_blank" rel="noopener">${DOC} Original-PDF öffnen</a>
+        <a class="btn" href="${g.pdf}" ${id === 'stream-setup' ? 'download' : 'target="_blank" rel="noopener"'}>${DOC} ${id === 'stream-setup' ? 'PDF herunterladen' : 'Original-PDF öffnen'}</a>
         <button class="btn" data-reset${done.size ? '' : ' hidden'}>${RESET} Haken zurücksetzen</button>
       </div>
     </header>
-    ${id === 'stream-obs-live' ? `<aside class="stream-permission" aria-label="Wichtiger Hinweis zur Stream-Erlaubnis">
-      <p>Vor jedem Live-Start zuerst Yosab, Elijah oder Yoas fragen. Nur nach einem ausdrücklichen Ja streamen; ohne Antwort oder bei Unsicherheit nicht starten.</p>
-      <p>Die Haken speichern nur deinen persönlichen Fortschritt. Sie sind keine Erlaubnis. Eine frühere Erlaubnis gilt nicht automatisch für einen neuen Anlass.</p>
-    </aside>` : ''}
     <div class="progress">
       <div class="progress-row"><div class="bar"><span id="bar"></span></div><span class="count" id="count"></span></div>
       <div class="next-step" id="next-step"></div>
