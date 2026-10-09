@@ -509,7 +509,7 @@ const IMAGE_SIZES = {
 
 const CATEGORIES = [
   { id: 'projektion', name: 'Projektion', blurb: 'Beamer, Leinwand, FreeShow und BibleShow', guides: ['projektion-beamer'] },
-  { id: 'stream', name: 'Stream', blurb: 'Fernseher, Videos und Übertragung', guides: ['stream-tv-video'] },
+  { id: 'stream', name: 'Stream', blurb: 'Fernseher, Videos und Übertragung', guides: ['stream-tv-video', 'stream-obs-live'] },
   { id: 'sound', name: 'Sound', blurb: 'Mixer, Szenen und Funkmikrofone', guides: ['sound-mix'] },
   { id: 'light', name: 'Light', blurb: 'Lichtkonsole, iPad und Photon-App', guides: ['light-op'] }
 ];
@@ -577,7 +577,6 @@ const GUIDES = {
     title: 'TV Video Setup',
     sub: 'Fernseher mit USB-Stick starten und das Video in Dauerschleife laufen lassen.',
     pdf: 'pdf/stream-tv-video-setup.pdf',
-    obsPdf: 'pdf/Stream-OBS-Live-Broadcast-Anleitung.pdf',
     cover: 'bilder/stream-tv-04.jpg',
     phases: [
       { name: 'Fernseher mit USB-Stick starten', chapters: [
@@ -602,6 +601,15 @@ const GUIDES = {
         ]}
       ]}
     ]
+  },
+  'stream-obs-live': {
+    cat: 'stream',
+    title: 'OBS / YouTube-Liveübertragung',
+    sub: 'Die bereitgestellte OBS-Live-Broadcast-Anleitung als PDF.',
+    pdf: 'pdf/Stream-OBS-Live-Broadcast-Anleitung.pdf',
+    cover: 'bilder/stream-tv-04.jpg',
+    pdfOnly: true,
+    phases: []
   },
   'sound-mix': {
     cat: 'sound',
@@ -894,7 +902,7 @@ function renderCategory(cat) {
       <div>
         <h3>${esc(g.title)}</h3>
         <p>${esc(g.sub)}</p>
-        <div class="meta"><span class="chip">${steps} Schritte</span>${done ? `<span class="chip">${done} erledigt</span>` : ''}${phases}</div>
+        <div class="meta"><span class="chip">${g.pdfOnly ? 'PDF-Anleitung' : `${steps} Schritte`}</span>${done ? `<span class="chip">${done} erledigt</span>` : ''}${phases}</div>
       </div>
       <span class="go">${ARROW}</span>
     </button>`;
@@ -906,7 +914,7 @@ function renderCategory(cat) {
   return `${crumbs([{ label: 'Start', hash: '' }, { label: cat.name, hash: cat.id }])}
     <header class="cat-head">
       <span class="strip-icon">${ICONS[cat.id]}</span>
-      <div><span class="eyebrow">Bereich</span><h1>${esc(cat.name)}</h1><p>${esc(cat.blurb)}</p></div>
+      <div><span class="eyebrow">Bereich</span><h1>${esc(cat.name)}</h1><p>${esc(cat.blurb)}</p>${cat.guides.length > 1 ? `<p>${cat.guides.length} Anleitungen – bitte wähle eine aus.</p>` : ''}</div>
     </header>
     <section class="guide-list">${cat.guides.length ? cards : empty}</section>`;
 }
@@ -915,6 +923,19 @@ function renderGuide(id) {
   const g = GUIDES[id];
   const cat = catById(g.cat);
   const done = loadDone(id);
+  if (g.pdfOnly) {
+    return `${crumbs([{ label: 'Start', hash: '' }, { label: cat.name, hash: cat.id }, { label: g.title, hash: id }])}
+      <header class="guide-head">
+        <span class="eyebrow">${esc(cat.name)} · PDF-Anleitung</span>
+        <h1>${esc(g.title)}</h1>
+        <p>${esc(g.sub)}</p>
+      </header>
+      <section class="embedded-pdf" aria-labelledby="obs-pdf-heading">
+        <h2 id="obs-pdf-heading">${esc(g.title)}</h2>
+        <iframe src="${g.pdf}" title="${esc(g.title)} als PDF" loading="lazy"></iframe>
+        <p><a href="${g.pdf}" target="_blank" rel="noopener">PDF in einem neuen Tab öffnen</a></p>
+      </section>`;
+  }
   let n = 0, ch = 0;
   const phases = g.phases.map((p, pi) => {
     const chapters = p.chapters.map(c => {
@@ -967,12 +988,6 @@ function renderGuide(id) {
         <button class="btn" data-reset${done.size ? '' : ' hidden'}>${RESET} Haken zurücksetzen</button>
       </div>
     </header>
-    ${g.obsPdf ? `<section class="embedded-pdf" aria-labelledby="obs-pdf-heading">
-      <h2 id="obs-pdf-heading">Zweite Anleitung: OBS / YouTube-Liveübertragung</h2>
-      <p>Dieser Abschnitt behandelt die Liveübertragung. Die Schritte darunter beschreiben die Wiedergabe eines Videos über Fernseher und USB-Stick.</p>
-      <iframe src="${g.obsPdf}" title="OBS-Live-Broadcast-Anleitung als PDF" loading="lazy"></iframe>
-      <p><a href="${g.obsPdf}" target="_blank" rel="noopener">PDF in einem neuen Tab öffnen</a></p>
-    </section>` : ''}
     <div class="progress">
       <div class="progress-row"><div class="bar"><span id="bar"></span></div><span class="count" id="count"></span></div>
       <div class="next-step" id="next-step"></div>
@@ -1058,10 +1073,12 @@ function render() {
   $app.innerHTML = html;
   void $app.offsetWidth;
   updateStorageNotice();
-  if (GUIDES[h]) {
+  if (GUIDES[h] && !GUIDES[h].pdfOnly) {
     updateProgress(h);
     observeNavigation(h);
     if (resumeGuideId === h) requestAnimationFrame(() => scrollToNextOpen(h));
+  } else if (GUIDES[h]) {
+    navObserver?.disconnect();
   } else {
     navObserver?.disconnect();
   }
