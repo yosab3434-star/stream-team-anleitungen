@@ -958,7 +958,7 @@ function renderGuide(id) {
       <p class="storage-note" id="storage-note" role="status"></p>
       <div class="guide-actions">
         <a class="btn" href="${g.pdf}" target="_blank" rel="noopener">${DOC} Original-PDF öffnen</a>
-        ${done.size ? `<button class="btn" data-reset>${RESET} Haken zurücksetzen</button>` : ''}
+        <button class="btn" data-reset${done.size ? '' : ' hidden'}>${RESET} Haken zurücksetzen</button>
       </div>
     </header>
     <div class="progress">
