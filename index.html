@@ -289,6 +289,10 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 .chapter { margin-top: 22px; display: grid; gap: 12px; scroll-margin-top: 110px; }
 .chapter > h2 { display: flex; align-items: baseline; gap: 12px; }
 .chapter > h2 .num { font: 700 14px/1 var(--f-mono); color: var(--muted); }
+.chapter-illustration { min-width: 0; margin: 0; }
+.chapter-illustration button { position: relative; display: grid; place-items: center; width: 100%; max-height: 360px; padding: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface-2); cursor: zoom-in; }
+.chapter-illustration img { display: block; width: 100%; max-height: 360px; object-fit: contain; }
+.chapter-illustration figcaption { margin: 6px 2px 0; color: var(--muted); font-size: 13px; line-height: 1.35; }
 
 .step {
   display: grid;
@@ -617,41 +621,41 @@ const GUIDES = {
     coverAlt: 'YouTube- und OBS-Symbole auf rotem Hintergrund',
     phases: [
       { name: 'Vorbereitung', chapters: [
-        { title: 'Übertragung vorbereiten', ready: 'Das Einrichtungsfenster für die richtige YouTube-Verbindung ist geöffnet.', steps: [
+        { title: 'Übertragung vorbereiten', illustration: { src: 'bilder/obs-guide-01.png', width: 1236, height: 812, alt: 'OBS-Bedienfeld mit markiertem Manage Broadcast-Schalter.', caption: 'OBS Controls: Manage Broadcast ist markiert (ca. 00:05). Nicht auf Start Streaming klicken.' }, ready: 'Das Einrichtungsfenster für die richtige YouTube-Verbindung ist geöffnet.', steps: [
           { t: 'OBS öffnen und Übertragungsverwaltung finden', d: 'Öffne OBS und suche rechts unten im Bereich <strong>Controls</strong> nach <strong>Manage Broadcast</strong> (Übertragung verwalten). Klicke darauf, nicht auf <strong>Start Streaming</strong>.' },
           { t: 'YouTube-Kanal prüfen', d: 'Prüfe im Fenster <strong>YouTube Broadcast Setup</strong> den oben angezeigten Kanalnamen.' },
           { t: 'Neue Übertragung auswählen', d: 'Wähle <strong>Create New Broadcast</strong>, wenn du eine neue Übertragung anlegen möchtest. Für die Einrichtung brauchst du den Titel des Anlasses, das richtige Datum und die Startzeit sowie das freigegebene Vorschaubild. OBS ist in der Aufnahme bereits mit dem YouTube-Kanal verbunden.' }
         ]},
-        { title: 'Titel und Beschreibung', ready: 'Thema und Datum sind aktuell; es stehen keine alten Veranstaltungsangaben mehr darin.', steps: [
+        { title: 'Titel und Beschreibung', illustration: { src: 'bilder/obs-guide-02.png', width: 1534, height: 432, alt: 'OBS-Fenster mit hervorgehobenen Feldern für Titel und Beschreibung.', caption: 'Titel- und Beschreibungsfelder aus der Aufnahme. Der sichtbare Veranstaltungstext und das Datum sind nur Beispiele.' }, ready: 'Thema und Datum sind aktuell; es stehen keine alten Veranstaltungsangaben mehr darin.', steps: [
           { t: 'Titel aktualisieren', d: 'Klicke in <strong>Title</strong> und ersetze den bisherigen Titel durch das Thema des aktuellen Anlasses. Im Video wird der Predigttitel geändert und mit „Gottesdienst“ ergänzt.' },
           { t: 'Beschreibung und Datum aktualisieren', d: 'Klicke in <strong>Description</strong>. Aktualisiere besonders das Datum in der ersten Zeile. Prüfe auch den restlichen Text und die Links, statt die alten Angaben ungeprüft zu übernehmen.' },
           { t: 'Titel und Beschreibung zusammen prüfen', d: 'Lies Titel und Beschreibung nochmals zusammen durch. Beide müssen zum selben Anlass gehören. Die Datumsangaben vom April 2026 in den Bildern sind nur Beispiele aus dem Video.' }
         ]},
-        { title: 'Sichtbarkeit und Zielgruppe', ready: 'Sichtbarkeit, Kategorie und Zielgruppe passen zum geplanten Inhalt.', steps: [
+        { title: 'Sichtbarkeit und Zielgruppe', illustration: { src: 'bilder/obs-guide-03.png', width: 1534, height: 258, alt: 'OBS-Fenster mit Privacy, Category und Zielgruppen-Einstellung.', caption: 'Die drei gezeigten Einstellungen; die Beispielauswahl nicht ungeprüft übernehmen.' }, ready: 'Sichtbarkeit, Kategorie und Zielgruppe passen zum geplanten Inhalt.', steps: [
           { t: 'Sichtbarkeit prüfen', d: 'Suche <strong>Privacy</strong>. Im Video ist <strong>Unlisted</strong> ausgewählt. Übernimm diese Sichtbarkeit nur, wenn sie für euren Anlass vorgesehen ist; lass dir die richtige Auswahl vom Stream-Team bestätigen.' },
           { t: 'Kategorie prüfen', d: 'Prüfe <strong>Category</strong>. Im Beispiel steht <strong>People and blogs</strong>. Verwende die vereinbarte Kategorie für euren Kanal.' },
           { t: 'Zielgruppe prüfen', d: 'Prüfe <strong>Is this video made for kids?</strong>. Im Video ist <strong>No</strong> ausgewählt. Das ist eine Angabe zur Zielgruppe und keine allgemeine Vorlage für jeden Inhalt. Bei Unsicherheit zuerst nachfragen. Die gelben Rahmen im Video zeigen die drei Einstellungen; das Beispiel ersetzt keine Freigabe durch die verantwortliche Person.' }
         ]},
-        { title: 'Vorschaubild auswählen', ready: 'Das richtige Bild ist als Vorschau sichtbar; „No file selected“ steht dort nicht mehr.', steps: [
+        { title: 'Vorschaubild auswählen', illustration: { src: 'bilder/obs-guide-04.png', width: 1534, height: 292, alt: 'OBS-Thumbnail-Feld mit der Schaltfläche Select file und dem Hinweis No file selected.', caption: 'Thumbnail-Bereich vor der Auswahl einer Datei.' }, ready: 'Das richtige Bild ist als Vorschau sichtbar; „No file selected“ steht dort nicht mehr.', steps: [
           { t: 'Vorhandenes altes Vorschaubild entfernen', d: 'Suche den Bereich <strong>Thumbnail</strong>. Ist dort noch das Bild eines früheren Anlasses, entferne es mit <strong>Clear</strong>. Danach erscheint <strong>Select file…</strong>.' },
           { t: 'Freigegebenes Vorschaubild auswählen', d: 'Klicke auf <strong>Select file…</strong> und öffne im Dateifenster den Ordner mit eurem vorbereiteten Vorschaubild. Wähle die passende Bilddatei und bestätige mit <strong>Open</strong>.' },
           { t: 'Ausgewähltes Bild prüfen', d: 'Kontrolliere anschliessend das angezeigte Vorschaubild. Thema und Bild müssen zum aktuellen Anlass passen. Wenn du die Datei nicht findest, frage nach dem freigegebenen Speicherort. Das Video zeigt das Dateifenster, aber keine abgeschlossene Auswahl eines neuen Bildes; der genaue Speicherort bleibt offen.' }
         ]},
-        { title: 'Weitere Einstellungen prüfen', ready: 'Die sichtbaren Optionen sind geprüft und die Terminplanung ist eingeblendet.', steps: [
+        { title: 'Weitere Einstellungen prüfen', illustration: { src: 'bilder/obs-guide-05.png', width: 1534, height: 434, alt: 'OBS Additional settings mit Latenz, DVR, 360 video und Terminplanung.', caption: 'Zusätzliche Einstellungen aus der Aufnahme; die gezeigten Werte sind keine allgemeine Vorgabe.' }, ready: 'Die sichtbaren Optionen sind geprüft und die Terminplanung ist eingeblendet.', steps: [
           { t: 'Zusätzliche Optionen ansehen', d: 'Scrolle im Broadcast-Fenster zu <strong>Additional settings</strong>. Im Video steht <strong>Latency</strong> auf <strong>Normal</strong>. <strong>Enable DVR</strong> ist angehakt und <strong>360 video</strong> nicht.' },
           { t: 'Terminplanung einblenden', d: 'Für eine geplante Übertragung ist <strong>Schedule for later</strong> angehakt. Dadurch wird darunter das Feld für Datum und Uhrzeit angezeigt.' },
           { t: 'Automatische Start- und Stopp-Optionen prüfen', d: '<strong>Enable Auto-start</strong> und <strong>Enable Auto-stop</strong> sind im Video ausgeschaltet. Ändere diese Optionen nicht nebenbei; verwende die vom Stream-Team bestätigte Einstellung. Die Werte aus der Aufnahme sind keine ungeprüfte Standardkonfiguration für jeden Stream.' }
         ]}
       ]},
       { name: 'Terminplanung', chapters: [
-        { title: 'Termin festlegen und planen', ready: 'Der richtige Termin ist eingetragen und die Planung wurde im Konto bestätigt.', steps: [
+        { title: 'Termin festlegen und planen', illustration: { src: 'bilder/obs-guide-06.png', width: 1534, height: 336, alt: 'OBS-Terminplanung mit Datumsfeld und den Schaltflächen Schedule and select broadcast sowie Schedule broadcast.', caption: 'Terminplanung aus der Aufnahme. Das Datum im Bild ist nur ein Beispiel; die richtige Schaltfläche im Zweifel bestätigen lassen.' }, ready: 'Der richtige Termin ist eingetragen und die Planung wurde im Konto bestätigt.', steps: [
           { t: 'Veranstaltungstag und Startzeit eintragen', d: 'Trage im Datumsfeld den vorgesehenen Veranstaltungstag und die vereinbarte Startzeit ein. Prüfe beides nochmals; übernimm nicht die Uhrzeit aus dem Beispielbild.' },
           { t: 'Angaben vor dem Planen nochmals prüfen', d: 'Prüfe vor dem Bestätigen noch einmal Titel, Beschreibung, Sichtbarkeit und Vorschaubild.' },
           { t: 'Vorgesehene Planungsoption bestätigen lassen', d: 'Im Fenster sind <strong>Schedule broadcast</strong> und <strong>Schedule and select broadcast</strong> sichtbar. <strong>Schedule broadcast</strong> ist zum Planen beschriftet; <strong>Schedule and select broadcast</strong> zusätzlich zum Auswählen. Lass dir bei Unsicherheit bestätigen, welche Variante euer Ablauf vorsieht. Kontrolliere danach, ob der geplante Eintrag tatsächlich vorhanden ist. In der Aufnahme ist keine eindeutige Erfolgsbestätigung der Planung zu sehen; ein geschlossenes Fenster allein reicht nicht als Nachweis.' }
         ]}
       ]},
       { name: 'Vor dem Live-Start', chapters: [
-        { title: 'Vor dem Live-Start kontrollieren', ready: 'Bild und Ton sind geprüft. Yosab, Elijah oder Yoas hat das Streamen ausdrücklich erlaubt.', steps: [
+        { title: 'Vor dem Live-Start kontrollieren', illustration: { src: 'bilder/obs-guide-07.png', width: 1054, height: 812, alt: 'OBS-Program-Fenster mit dem Start- und Introbild der bereitgestellten Aufnahme.', caption: 'Program-Fenster am Ende der Aufnahme (ca. 02:10). Die Aufnahme dokumentiert keinen Live-Start.' }, ready: 'Bild und Ton sind geprüft. Yosab, Elijah oder Yoas hat das Streamen ausdrücklich erlaubt.', steps: [
           { t: 'Programmbild in OBS kontrollieren', d: 'Kontrolliere rechts im <strong>Program</strong>-Fenster das Bild, das ausgegeben werden soll. Am Ende des Videos ist dort <strong>Start / Intro</strong> sichtbar. Ein schwarzes Bild oder Ladesymbol ist kein fertiges Startbild.' },
           { t: 'Geplante Übertragung sowie Bild und Ton prüfen', d: 'Prüfe mit der verantwortlichen Person den richtigen geplanten Broadcast sowie Bild und Ton. Bewegte Tonbalken allein bestätigen noch nicht, dass beim Publikum alles richtig ankommt.' },
           { t: 'Stream-Erlaubnis vor dem Live-Start einholen', d: 'Frage immer zuerst Yosab, Elijah oder Yoas, ob du streamen darfst. Starte den Stream erst, wenn eine dieser Personen ausdrücklich Ja gesagt hat. Ohne Antwort oder bei Unsicherheit: nicht starten und nochmals nachfragen. Für eine vollständige Fortsetzung fehlt in der bereitgestellten Anleitung eine Aufnahme vom erfolgreichen Auswählen, Live-Start und der Kontrolle auf YouTube.' }
@@ -1001,7 +1005,13 @@ function renderGuide(id) {
         </article>`;
       }).join('');
       const ready = c.ready ? `<div class="ready"><span class="eyebrow">Fertig, wenn</span><span>${esc(c.ready)}</span></div>` : '';
-      return `<section class="chapter" id="ch-${ch}"><h2><span class="num">${String(ch).padStart(2, '0')}</span>${esc(c.title)}</h2>${steps}${ready}</section>`;
+      const illustration = c.illustration ? `<figure class="chapter-illustration">
+        <button type="button" data-zoom="${esc(c.illustration.src)}" data-cap="${esc(c.illustration.caption)}" aria-label="Bild vergrössern: ${esc(c.illustration.alt)}">
+          <img src="${esc(c.illustration.src)}" alt="${esc(c.illustration.alt)}" loading="lazy" width="${c.illustration.width}" height="${c.illustration.height}">
+        </button>
+        <figcaption>${esc(c.illustration.caption)}</figcaption>
+      </figure>` : '';
+      return `<section class="chapter" id="ch-${ch}"><h2><span class="num">${String(ch).padStart(2, '0')}</span>${esc(c.title)}</h2>${illustration}${steps}${ready}</section>`;
     }).join('');
     return `<div class="phase" id="phase-${pi}"><div class="phase-label"><span class="eyebrow">${esc(p.name)}</span></div>${chapters}</div>`;
   }).join('');
