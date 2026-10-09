@@ -676,10 +676,12 @@ function renderStart() {
   })() : '';
   const strips = CATEGORIES.map(c => {
     const n = c.guides.length;
+    const total = c.guides.reduce((sum, id) => sum + stepsOf(GUIDES[id]).length, 0);
+    const done = c.guides.reduce((sum, id) => sum + loadDone(id).size, 0);
     return `<button class="strip cat-${c.id}" data-go="${n === 1 ? c.guides[0] : c.id}" aria-label="${esc(c.name)} öffnen">
       <div class="strip-top">
         <span class="strip-icon">${ICONS[c.id]}</span>
-        <span class="led ${n ? '' : 'off'}"><i></i>${n ? 'Bereit' : 'Bald'}</span>
+        <span class="led ${n ? '' : 'off'}"><i></i>${n ? (done ? `${done}/${total}` : `${total} Schritte`) : 'Bald'}</span>
       </div>
       <div>
         <div class="strip-name">${esc(c.name)}</div>
