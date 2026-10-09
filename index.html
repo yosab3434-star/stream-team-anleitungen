@@ -43,30 +43,6 @@
   color-scheme: dark;
 }
 
-function observeNavigation(id) {
-  navObserver?.disconnect();
-  const guide = GUIDES[id];
-  const targets = guide.phases.length > 1
-    ? [...$app.querySelectorAll('.phase')]
-    : [...$app.querySelectorAll('.chapter')];
-  if (!targets.length || !('IntersectionObserver' in window)) return;
-  navObserver = new IntersectionObserver(() => {
-    const marker = 155;
-    const current = targets.find(section => {
-      const rect = section.getBoundingClientRect();
-      return rect.top <= marker && rect.bottom > marker;
-    }) || targets.find(section => section.getBoundingClientRect().top > marker) || targets[targets.length - 1];
-    const button = $app.querySelector(`[data-jump="${current.id}"]`);
-    $app.querySelectorAll('.phase-btn.active').forEach(active => active.classList.remove('active'));
-    if (!button) return;
-    button.classList.add('active');
-    const phases = button.parentElement;
-    const desiredLeft = phases.scrollLeft + button.getBoundingClientRect().left - phases.getBoundingClientRect().left - (phases.clientWidth - button.offsetWidth) / 2;
-    phases.scrollTo({ left: desiredLeft, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-  }, { rootMargin: '-120px 0px -60% 0px' });
-  targets.forEach(section => navObserver.observe(section));
-}
-
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
@@ -308,9 +284,15 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
   display: grid; place-items: center; min-height: 160px; max-height: 300px;
   position: relative;
 }
-.step-img img { display: block; width: 100%; height: 100%; max-height: 300px; object-fit: contain; transition: opacity .2s ease; }
+.step-img::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(100deg, var(--surface-2) 25%, var(--line) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%; animation: image-loading 1.4s ease-in-out infinite;
+}
+.step-img.loaded::before, .step-img.failed::before { display: none; }
+.step-img img { position: relative; z-index: 1; display: block; width: 100%; height: 100%; max-height: 300px; object-fit: contain; transition: opacity .2s ease; }
 .step-img .zoom {
-  position: absolute; right: 8px; bottom: 8px;
+  position: absolute; z-index: 2; right: 8px; bottom: 8px;
   width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center;
   background: rgba(0, 0, 0, .55); color: #fff;
 }
@@ -421,9 +403,11 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 
 .view { animation: rise .28s ease both; }
 @keyframes rise { from { opacity: .4; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes image-loading { to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) {
   .view { animation: none; }
   .strip, .guide-card, .strip::after, .bar span { transition: none; }
+  .step-img::before { animation: none; }
 }
 </style>
 
@@ -448,6 +432,23 @@ const ZOOM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 const TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 const DOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>';
 const RESET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.5-5.8M4 4v4h4"/></svg>';
+const IMAGE_SIZES = {
+  'light-01': [856, 502], 'light-02': [836, 488], 'light-03': [836, 484], 'light-04': [828, 488],
+  'light-05': [840, 488], 'light-06': [827, 471], 'light-07': [826, 488], 'light-08': [831, 516],
+  'projektion-01': [422, 529], 'projektion-02': [752, 529], 'projektion-03': [932, 529], 'projektion-04': [916, 529],
+  'projektion-05': [940, 529], 'projektion-06': [702, 529], 'projektion-07': [525, 523], 'projektion-08': [526, 523],
+  'projektion-09': [964, 471], 'projektion-10': [930, 529], 'projektion-11': [962, 529], 'projektion-12': [1400, 519],
+  'projektion-13': [538, 529], 'projektion-14': [1332, 529], 'projektion-15': [1192, 529], 'projektion-16': [1247, 529],
+  'projektion-17': [594, 529], 'projektion-18': [997, 529], 'projektion-19': [930, 529], 'projektion-20': [940, 529],
+  'sound-01': [972, 700], 'sound-02': [976, 700], 'sound-03': [972, 700], 'sound-04': [972, 700],
+  'sound-05': [972, 700], 'sound-06': [975, 700], 'sound-07': [972, 700], 'sound-08': [972, 704],
+  'sound-09': [976, 704], 'sound-10': [972, 700], 'sound-11': [972, 700], 'sound-12a': [972, 700],
+  'sound-12b': [976, 700], 'sound-13': [974, 700], 'sound-14': [972, 700], 'sound-15': [972, 888],
+  'sound-16': [976, 700], 'sound-17': [972, 700],
+  'stream-tv-01': [889, 625], 'stream-tv-02': [892, 628], 'stream-tv-03': [889, 623], 'stream-tv-04': [892, 623],
+  'stream-tv-05': [890, 623], 'stream-tv-06': [889, 623], 'stream-tv-07': [895, 628], 'stream-tv-08': [889, 628],
+  'stream-tv-09': [890, 628], 'stream-tv-10': [889, 628], 'stream-tv-11': [878, 623]
+};
 
 const CATEGORIES = [
   { id: 'projektion', name: 'Projektion', blurb: 'Beamer, Leinwand, FreeShow und BibleShow', guides: ['projektion-beamer'] },
@@ -622,6 +623,23 @@ const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;'
 function loadDone(id) {
   try { return new Set(JSON.parse(localStorage.getItem('done:' + id) || '[]')); } catch (e) { return new Set(); }
 }
+const preloadedImages = new Set();
+
+function preloadNextSteps() {
+  const nextImages = [...$app.querySelectorAll('.step:not(.done)')]
+    .slice(0, 2)
+    .flatMap(step => [...step.querySelectorAll('.step-img img')])
+    .map(img => img.getAttribute('src'));
+  nextImages.forEach(src => {
+    if (preloadedImages.has(src)) return;
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = src;
+    document.head.append(link);
+    preloadedImages.add(src);
+  });
+}
 function saveDone(id, set) {
   try { localStorage.setItem('done:' + id, JSON.stringify([...set])); } catch (e) {}
 }
@@ -706,7 +724,7 @@ function renderCategory(cat) {
     const done = loadDone(id).size;
     const phases = g.phases.length > 1 ? g.phases.map(p => `<span class="chip">${esc(p.name)}</span>`).join('') : '';
     return `<button class="guide-card" data-go="${id}">
-      <img src="${g.cover}" alt="" loading="lazy">
+      <img src="${g.cover}" alt="" loading="lazy" width="${IMAGE_SIZES[g.cover.slice(7, -4)][0]}" height="${IMAGE_SIZES[g.cover.slice(7, -4)][1]}">
       <div>
         <h3>${esc(g.title)}</h3>
         <p>${esc(g.sub)}</p>
@@ -739,7 +757,7 @@ function renderGuide(id) {
         n++;
         const isDone = done.has(n);
         const imgs = [].concat(s.img).map(img => `<button class="step-img" data-zoom="bilder/${img}.jpg" data-cap="${n}. ${esc(s.t)}" aria-label="Bild zu Schritt ${n} vergrössern">
-            <img src="bilder/${img}.jpg" alt="Foto zu Schritt ${n}: ${esc(s.t)}" loading="lazy"><span class="zoom">${ZOOM}</span>
+            <img src="bilder/${img}.jpg" alt="Foto zu Schritt ${n}: ${esc(s.t)}" loading="lazy" width="${IMAGE_SIZES[img][0]}" height="${IMAGE_SIZES[img][1]}"><span class="zoom">${ZOOM}</span>
           </button>`).join('');
         const list = s.list ? `<ul class="map">${s.list.map(([a, b]) => `<li><span>${esc(a)}</span>${ARROW}<b>${esc(b)}</b></li>`).join('')}</ul>` : '';
         return `<article class="step${isDone ? ' done' : ''}" data-step="${n}">
@@ -788,6 +806,30 @@ function renderGuide(id) {
     <div class="continue-bar" id="continue-bar" hidden><button type="button" data-continue></button></div>`;
 }
 
+function observeNavigation(id) {
+  navObserver?.disconnect();
+  const guide = GUIDES[id];
+  const targets = guide.phases.length > 1
+    ? [...$app.querySelectorAll('.phase')]
+    : [...$app.querySelectorAll('.chapter')];
+  if (!targets.length || !('IntersectionObserver' in window)) return;
+  navObserver = new IntersectionObserver(() => {
+    const marker = 155;
+    const current = targets.find(section => {
+      const rect = section.getBoundingClientRect();
+      return rect.top <= marker && rect.bottom > marker;
+    }) || targets.find(section => section.getBoundingClientRect().top > marker) || targets[targets.length - 1];
+    const button = $app.querySelector(`[data-jump="${current.id}"]`);
+    $app.querySelectorAll('.phase-btn.active').forEach(active => active.classList.remove('active'));
+    if (!button) return;
+    button.classList.add('active');
+    const phases = button.parentElement;
+    const desiredLeft = phases.scrollLeft + button.getBoundingClientRect().left - phases.getBoundingClientRect().left - (phases.clientWidth - button.offsetWidth) / 2;
+    phases.scrollTo({ left: desiredLeft, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }, { rootMargin: '-120px 0px -60% 0px' });
+  targets.forEach(section => navObserver.observe(section));
+}
+
 function updateProgress(id) {
   const total = stepsOf(GUIDES[id]).length;
   const done = loadDone(id).size;
@@ -814,6 +856,7 @@ function updateProgress(id) {
     continueButton.textContent = 'Geschafft? Abschluss anzeigen';
     delete continueButton.dataset.targetStep;
   }
+  preloadNextSteps();
 }
 
 function scrollToNextOpen(id) {
@@ -887,6 +930,12 @@ $app.addEventListener('click', e => {
     showResetUndo(id, previous);
   }
 });
+$app.addEventListener('load', e => {
+  if (e.target.matches('.step-img img') && e.target.naturalWidth) e.target.closest('.step-img').classList.add('loaded');
+}, true);
+$app.addEventListener('error', e => {
+  if (e.target.matches('.step-img img')) e.target.closest('.step-img').classList.add('failed');
+}, true);
 
 const lb = document.getElementById('lightbox');
 function openLightbox(src, cap) {
