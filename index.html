@@ -43,6 +43,43 @@
   color-scheme: dark;
 }
 
+function searchGuides(query) {
+  const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('de');
+  const term = normalize(query.trim());
+  if (!term) return [];
+  const results = [];
+  CATEGORIES.forEach(category => category.guides.forEach(id => {
+    const guide = GUIDES[id];
+    const guideMatch = normalize(`${category.name} ${guide.title} ${guide.sub}`).includes(term);
+    if (guideMatch) results.push({ id, category, guide, step: null });
+    let number = 0;
+    stepsOf(guide).forEach(step => {
+      number++;
+      const text = step.d.replace(/<[^>]*>/g, ' ');
+      if (normalize(`${step.t} ${text}`).includes(term)) results.push({ id, category, guide, step: { ...step, number } });
+    });
+  }));
+  return results;
+}
+
+function renderSearchResults(query) {
+  const target = document.getElementById('search-results');
+  if (!target) return;
+  const q = query.trim();
+  if (!q) { target.innerHTML = ''; return; }
+  const results = searchGuides(q);
+  if (!results.length) {
+    target.innerHTML = '<p role="status">Keine passenden Anleitungen oder Schritte gefunden.</p>';
+    return;
+  }
+  target.innerHTML = `<ul class="search-results">${results.map(result => {
+    const step = result.step;
+    const hash = step ? `${result.id}/step-${step.number}` : result.id;
+    const detail = step ? `Schritt ${step.number}: ${esc(step.t)}` : 'Anleitung öffnen';
+    return `<li><button class="cat-${result.category.id}" data-go="${hash}"><strong>${esc(result.category.name)} · ${esc(result.guide.title)}</strong><small>${detail}</small></button></li>`;
+  }).join('')}</ul>`;
+}
+
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
@@ -91,6 +128,20 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 /* ---------- Startseite ---------- */
 .intro { display: grid; gap: 10px; margin-bottom: 30px; }
 .intro p { margin: 0; color: var(--muted); max-width: 52ch; font-size: 18px; }
+.search { display: grid; gap: 8px; margin-bottom: 20px; }
+.search label { font-weight: 700; }
+.search input {
+  width: 100%; min-height: 48px; padding: 10px 14px;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--surface); color: var(--ink); font: inherit;
+}
+.search-results { display: grid; gap: 6px; padding: 0; margin: 0; list-style: none; }
+.search-results button {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--surface); text-align: left; cursor: pointer;
+}
+.search-results button:hover { border-color: var(--c); }
+.search-results small { display: block; color: var(--muted); }
 .resume-card {
   width: 100%; margin: 0 0 18px; padding: 16px 18px;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -720,6 +771,11 @@ function renderStart() {
       <h1>Was machst du heute?</h1>
       <p>Wähle deinen Bereich. Danach siehst du die passende Anleitung Schritt für Schritt mit Fotos.</p>
     </header>
+    <div class="search">
+      <label for="guide-search">Anleitungen durchsuchen</label>
+      <input id="guide-search" type="search" autocomplete="off" placeholder="Bereich, Schritt oder Text">
+      <div id="search-results" aria-live="polite"></div>
+    </div>
     ${resumeCard}
     <section class="desk">${strips}</section>`;
 }
@@ -936,6 +992,9 @@ $app.addEventListener('click', e => {
     updateProgress(id);
     showResetUndo(id, previous);
   }
+});
+$app.addEventListener('input', e => {
+  if (e.target.id === 'guide-search') renderSearchResults(e.target.value);
 });
 $app.addEventListener('load', e => {
   if (e.target.matches('.step-img img') && e.target.naturalWidth) e.target.closest('.step-img').classList.add('loaded');
