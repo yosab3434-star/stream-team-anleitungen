@@ -43,6 +43,30 @@
   color-scheme: dark;
 }
 
+function observeNavigation(id) {
+  navObserver?.disconnect();
+  const guide = GUIDES[id];
+  const targets = guide.phases.length > 1
+    ? [...$app.querySelectorAll('.phase')]
+    : [...$app.querySelectorAll('.chapter')];
+  if (!targets.length || !('IntersectionObserver' in window)) return;
+  navObserver = new IntersectionObserver(() => {
+    const marker = 155;
+    const current = targets.find(section => {
+      const rect = section.getBoundingClientRect();
+      return rect.top <= marker && rect.bottom > marker;
+    }) || targets.find(section => section.getBoundingClientRect().top > marker) || targets[targets.length - 1];
+    const button = $app.querySelector(`[data-jump="${current.id}"]`);
+    $app.querySelectorAll('.phase-btn.active').forEach(active => active.classList.remove('active'));
+    if (!button) return;
+    button.classList.add('active');
+    const phases = button.parentElement;
+    const desiredLeft = phases.scrollLeft + button.getBoundingClientRect().left - phases.getBoundingClientRect().left - (phases.clientWidth - button.offsetWidth) / 2;
+    phases.scrollTo({ left: desiredLeft, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }, { rootMargin: '-120px 0px -60% 0px' });
+  targets.forEach(section => navObserver.observe(section));
+}
+
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
@@ -229,14 +253,20 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 .bar span { display: block; height: 100%; width: 0; background: var(--c); border-radius: inherit; transition: width .35s ease; }
 .count { font: 700 13px/1 var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .next-step { color: var(--muted); font-size: 14px; font-weight: 700; }
-.phases { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.phases-wrap { position: relative; min-width: 0; }
+.phases-wrap::after {
+  content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 28px;
+  background: linear-gradient(90deg, transparent, var(--bg)); pointer-events: none;
+}
+.phases { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-right: 24px; }
 .phases::-webkit-scrollbar { display: none; }
 .phase-btn {
   flex: none; padding: 6px 12px; border-radius: 999px;
   border: 1px solid var(--line); background: var(--surface);
-  font: 700 12px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+  font: 700 14px/1.2 var(--f-body); white-space: nowrap; cursor: pointer;
 }
 .phase-btn:hover { border-color: var(--c); color: var(--c); }
+.phase-btn.active { border-color: var(--c); background: var(--surface); color: var(--c); }
 
 .phase { margin-top: 34px; scroll-margin-top: 110px; }
 .phase-label { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
@@ -482,7 +512,7 @@ const GUIDES = {
     cover: 'bilder/stream-tv-04.jpg',
     phases: [
       { name: 'Fernseher mit USB-Stick starten', chapters: [
-        { title: 'Vorbereiten', steps: [
+        { title: 'Vorbereiten', short: 'USB-Stick', steps: [
           { t: 'USB-Stick abholen', img: 'stream-tv-01', d: 'Hole den USB-Stick ab.' },
           { t: 'USB-Stick einstecken', img: 'stream-tv-02', d: 'Stecke den USB-Stick auf der Rückseite des Fernsehers in den USB-Anschluss.' },
           { t: 'Fernbedienung nehmen', img: 'stream-tv-03', d: 'Nimm die Fernbedienung des Fernsehers.' },
@@ -493,7 +523,7 @@ const GUIDES = {
           { t: 'Inhaltstyp „Alle“ wählen', img: 'stream-tv-06', d: 'Wähle als Inhaltstyp <strong>Alle</strong> aus.' },
           { t: 'Ordner und Video öffnen', img: 'stream-tv-07', d: 'Öffne den Ordner <strong>„LWI Aarau“</strong> (1) und starte darin das Video <strong>„LWI-Fernseher“</strong> (2).' }
         ]},
-        { title: 'Dauerschleife einstellen', ready: 'Das Video läuft und wiederholt sich automatisch.', steps: [
+        { title: 'Dauerschleife einstellen', short: 'Wiederholung', ready: 'Das Video läuft und wiederholt sich automatisch.', steps: [
           { t: 'Einstellungen öffnen', img: 'stream-tv-08', d: 'Drücke die <strong>OK-/Eingabe-Taste</strong>. Navigiere danach nach rechts zum <strong>Einstellungs-Symbol</strong> (Zahnrad).' },
           { t: '„Wiederholen“ auswählen', img: 'stream-tv-09', d: 'Wähle im Menü <strong>Wiederholen</strong> aus.' },
           { t: '„Alle wiederholen“ auswählen', img: 'stream-tv-10', d: 'Wähle <strong>Alle wiederholen</strong> aus.' }
@@ -519,13 +549,13 @@ const GUIDES = {
           { t: 'Szenen öffnen', img: 'sound-04', d: 'Drücke auf der rechten Seite des Mixers auf <strong>„Scenes“</strong>.' },
           { t: 'Szene für den Gottesdienst laden', img: 'sound-05', d: 'Wähle <strong>„10) Living“</strong> aus. Drücke auf <strong>„Recall“</strong> und beim Pop-up auf <strong>„OK“</strong>.' }
         ]},
-        { title: 'Namen ändern (Mikrofone 1–4)', steps: [
+        { title: 'Namen ändern (Mikrofone 1–4)', short: 'Namen', steps: [
           { t: 'Auf Bank 1 / Layer A gehen', img: 'sound-06', d: 'Drücke auf dem Mixer bei <strong>„Bank 1“</strong> den Knopf <strong>„Layer A“</strong>.' },
           { t: 'Kanal auswählen', img: 'sound-07', d: 'Drücke beim gewünschten Mikrofon-Kanal (z. B. Mikro 1) den <strong>„Sel“</strong>-Knopf.' },
           { t: 'Namen bearbeiten', img: 'sound-08', d: 'Drücke auf dem Mixer-Bildschirm das Tastatur-Symbol. Wenn das Tastatur-Pop-up erscheint, gib den neuen Namen ein und drücke auf <strong>„Apply“</strong>.' },
           { t: 'Für Mikrofone 2–4 wiederholen', img: 'sound-09', d: 'Für Mikro 2, 3 und 4 wieder: <strong>„Sel“</strong> drücken → Tastatur → Namen eingeben → <strong>„Apply“</strong>.' }
         ]},
-        { title: 'Mikrofon-Setup XTUGA A400-H', steps: [
+        { title: 'Mikrofon-Setup XTUGA A400-H', short: 'Mikrofone', steps: [
           { t: 'Mikrofon-Set vorbereiten', img: 'sound-10', d: 'Nimm die <strong>XTUGA A400-H</strong> Mikrofonbox und lege sie auf die Seite. Lege <strong>8 aufgeladene Batterien</strong> bereit.' },
           { t: 'Receiver und Antennen aufbauen', img: 'sound-11', d: 'Öffne die Mikrofonbox und nimm den Receiver heraus. Stelle ihn auf den Schrank. Nimm die Antennen heraus und stecke sie in den Receiver. Nimm den AC-Adapter aus der Box und stecke ihn in den Receiver.' },
           { t: 'XLR-Kabel anschliessen', img: ['sound-12a', 'sound-12b'], d: 'Nimm <strong>4 XLR-Kabel</strong> aus der Kabelrolle und stecke sie in den Receiver. Stecke das <strong>„male“ Ende</strong> der XLR-Kabel in der SNAKE-Box ein:', list: [
@@ -573,6 +603,7 @@ const GUIDES = {
 const $app = document.getElementById('app');
 let resetUndo = null;
 let resetUndoTimer = 0;
+let navObserver = null;
 const catById = id => CATEGORIES.find(c => c.id === id);
 const stepsOf = g => g.phases.flatMap(p => p.chapters.flatMap(c => c.steps));
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
@@ -705,9 +736,9 @@ function renderGuide(id) {
   const total = n;
   const chapterNames = g.phases.flatMap(p => p.chapters.map(c => c.title));
   const phaseNav = g.phases.length > 1
-    ? `<div class="phases">${g.phases.map((p, i) => `<button class="phase-btn" data-jump="phase-${i}">${esc(p.name)}</button>`).join('')}</div>`
+    ? `<div class="phases-wrap"><div class="phases">${g.phases.map((p, i) => `<button class="phase-btn" data-jump="phase-${i}">${esc(p.short || p.name)}</button>`).join('')}</div></div>`
     : chapterNames.length > 1
-      ? `<div class="phases">${chapterNames.map((t, i) => `<button class="phase-btn" data-jump="ch-${i + 1}">${esc(t)}</button>`).join('')}</div>` : '';
+      ? `<div class="phases-wrap"><div class="phases">${g.phases.flatMap(p => p.chapters).map((c, i) => `<button class="phase-btn" data-jump="ch-${i + 1}">${esc(c.short || c.title)}</button>`).join('')}</div></div>` : '';
   const trail = cat.guides.length === 1
     ? [{ label: 'Start', hash: '' }, { label: g.title, hash: id }]
     : [{ label: 'Start', hash: '' }, { label: cat.name, hash: cat.id }, { label: g.title, hash: id }];
@@ -777,7 +808,12 @@ function render() {
   $app.className = 'wrap view' + (catId ? ' cat-' + catId : '');
   $app.innerHTML = html;
   void $app.offsetWidth;
-  if (GUIDES[h]) updateProgress(h);
+  if (GUIDES[h]) {
+    updateProgress(h);
+    observeNavigation(h);
+  } else {
+    navObserver?.disconnect();
+  }
   window.scrollTo(0, 0);
 }
 
