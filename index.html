@@ -276,6 +276,8 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 
 .step-imgs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-content: start; }
 .step-imgs .step-img { min-height: 120px; }
+.step-media { min-width: 0; }
+.img-note { margin: 6px 2px 0; color: var(--muted); font-size: 13px; line-height: 1.35; }
 
 .map { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .map li {
@@ -398,11 +400,11 @@ const GUIDES = {
       { name: 'Aufbau', chapters: [
         { title: 'Kabel holen und Strom einstecken', ready: 'Der Stromstecker sitzt vollständig in der Buchse.', steps: [
           { t: 'HDMI-Kabel holen', img: 'projektion-01', d: 'Suche im Technikregal die graue Box. Auf dem Bild zeigt der rote Kreis, wo das HDMI-Kabel liegt. Nimm das Kabel und wickle es vollständig ab. Mit diesem Kabel wird später das Bild zum Beamer übertragen.' },
-          { t: 'Stromkabel am Beamer einstecken', img: 'projektion-02', d: 'Suche hinten am Beamer die grosse schwarze Strombuchse. Die rote Markierung im Bild zeigt die Stelle. Stecke das passende Ende des Stromkabels vollständig hinein. Der Stecker muss ohne Gewalt passen; das HDMI-Kabel gehört nicht in diese Buchse.' }
+          { t: 'Stromkabel am Beamer einstecken', img: 'projektion-02', note: 'Die Zahlen im Foto stammen aus dem Original und sind nicht die Schrittnummer.', d: 'Suche hinten am Beamer die grosse schwarze Strombuchse. Die rote Markierung im Bild zeigt die Stelle. Stecke das passende Ende des Stromkabels vollständig hinein. Der Stecker muss ohne Gewalt passen; das HDMI-Kabel gehört nicht in diese Buchse.' }
         ]},
         { title: 'Strom einschalten und HDMI verbinden', ready: 'Der Schalter leuchtet. Beide Kabel sind eingesteckt.', steps: [
           { t: 'Orangen Schalter einschalten', img: 'projektion-03', d: 'Suche am Technikplatz den orangefarbenen Schalter auf dem Foto. Schalte ihn ein und kontrolliere, ob er leuchtet. Damit ist die Stromversorgung eingeschaltet. Der Beamer wird erst später mit seiner Fernbedienung gestartet.' },
-          { t: 'HDMI am Beamer einstecken', img: 'projektion-04', d: 'Stecke ein Ende des HDMI-Kabels in den blau markierten HDMI-Anschluss hinten am Beamer. Die rote Markierung zeigt zum Vergleich den Stromanschluss. Achte auf die Form des Steckers und drücke ihn gerade hinein. Nicht mit Gewalt einstecken.' }
+          { t: 'HDMI am Beamer einstecken', img: 'projektion-04', note: 'Die Zahlen im Foto stammen aus dem Original und sind nicht die Schrittnummer.', d: 'Stecke ein Ende des HDMI-Kabels in den blau markierten HDMI-Anschluss hinten am Beamer. Die rote Markierung zeigt zum Vergleich den Stromanschluss. Achte auf die Form des Steckers und drücke ihn gerade hinein. Nicht mit Gewalt einstecken.' }
         ]},
         { title: 'Kabel zum Technikpult führen', ready: 'Beide Enden des HDMI-Kabels sind angeschlossen.', steps: [
           { t: 'Kabel am Tischrand entlanglegen', img: 'projektion-05', d: 'Führe das freie Ende des HDMI-Kabels vom Beamer zum Technikpult. Lege es wie im Bild am Tischrand entlang. Lass etwas Spiel am Beamer, damit niemand am Anschluss zieht. Im Durchgang darf keine lose Kabelschlaufe liegen.' },
@@ -413,7 +415,7 @@ const GUIDES = {
           { t: 'Warten, bis ein Bild erscheint', img: 'projektion-08', d: 'Schau jetzt auf die Leinwand. Der Beamer braucht einen Moment zum Starten. Ein Startbild, Menü oder eine Meldung zeigt, dass er eingeschaltet ist. Das Notebook-Bild muss noch nicht sichtbar sein. Bleibt alles dunkel, kontrolliere Stromkabel und orangefarbenen Schalter.' }
         ]},
         { title: 'Notebook und Fernseher einstellen', ready: 'Der Fernseher ist an. Windows steht auf Erweitern.', steps: [
-          { t: 'Windows + P drücken', img: 'projektion-09', d: 'Am Notebook: Halte die Taste mit dem Windows-Zeichen gedrückt und drücke zusätzlich <strong>P</strong>. Lass beide Tasten los. Klicke im eingeblendeten Menü auf <strong>Erweitern</strong>. So bleiben die Bedienung am Notebook und die Ausgabe für die Leinwand getrennt.' },
+          { t: 'Windows + P drücken', img: 'projektion-09', note: 'Die Zahlen im Foto stammen aus dem Original und sind nicht die Schrittnummer.', d: 'Am Notebook: Halte die Taste mit dem Windows-Zeichen gedrückt und drücke zusätzlich <strong>P</strong>. Lass beide Tasten los. Klicke im eingeblendeten Menü auf <strong>Erweitern</strong>. So bleiben die Bedienung am Notebook und die Ausgabe für die Leinwand getrennt.' },
           { t: 'Fernseher einschalten', img: 'projektion-10', d: 'Nimm die Fernbedienung des Fernsehers. Richte sie auf den Fernseher und drücke die Ein-/Aus-Taste (<strong>POWER</strong>). Warte, bis er reagiert. Prüfe zuerst, ob der Bildschirm eingeschaltet ist; die Bildquelle am ATEM wählst du im nächsten Schritt.' }
         ]},
         { title: 'Notebook-Bild auswählen', ready: 'Taste 2 leuchtet. FreeShow ist geöffnet.', steps: [
@@ -631,7 +633,7 @@ function renderGuide(id) {
           </button>`).join('');
         const list = s.list ? `<ul class="map">${s.list.map(([a, b]) => `<li><span>${esc(a)}</span>${ARROW}<b>${esc(b)}</b></li>`).join('')}</ul>` : '';
         return `<article class="step${isDone ? ' done' : ''}" data-step="${n}">
-          ${Array.isArray(s.img) ? `<div class="step-imgs">${imgs}</div>` : imgs}
+          <div class="step-media">${Array.isArray(s.img) ? `<div class="step-imgs">${imgs}</div>` : imgs}${s.note ? `<p class="img-note">${esc(s.note)}</p>` : ''}</div>
           <div class="step-body">
             <div class="step-title"><span class="step-no" aria-label="${isDone ? `Schritt ${n} erledigt` : `Schritt ${n}`}">${isDone ? TICK : n}</span><h3>${esc(s.t)}</h3></div>
             <p>${s.d}</p>${list}
