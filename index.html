@@ -418,6 +418,7 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
   background: var(--c); color: #fff;
   font: 700 15px/1 var(--f-mono); font-variant-numeric: tabular-nums;
 }
+.step-no[role="img"] { font-size: 15px; }
 .step.done .step-no { background: var(--ok); }
 .step-no svg { width: 18px; height: 18px; }
 .step-title h3 { padding-top: 6px; }
@@ -516,7 +517,7 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 
 <div class="wrap" id="app"></div>
 
-<div class="lightbox" id="lightbox" hidden>
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-labelledby="lb-cap" hidden>
   <img id="lb-img" alt="">
   <p id="lb-cap"></p>
   <button class="close" id="lb-close" aria-label="Bild schliessen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -894,13 +895,13 @@ function renderGuide(id) {
         n++;
         const isDone = done.has(n);
         const imgs = [].concat(s.img).map(img => `<button class="step-img${IMAGE_SIZES[img][1] > IMAGE_SIZES[img][0] ? ' portrait' : ''}" style="--step-image: url('bilder/${img}.jpg')" data-zoom="bilder/${img}.jpg" data-cap="${n}. ${esc(s.t)}" aria-label="Bild zu Schritt ${n} vergrössern">
-            <img src="bilder/${img}.jpg" alt="Foto zu Schritt ${n}: ${esc(s.t)}" loading="lazy" width="${IMAGE_SIZES[img][0]}" height="${IMAGE_SIZES[img][1]}"><span class="zoom">${ZOOM}</span>
+            <img src="bilder/${img}.jpg" alt="Foto zur Anleitung: ${esc(s.t)}" loading="lazy" width="${IMAGE_SIZES[img][0]}" height="${IMAGE_SIZES[img][1]}"><span class="zoom">${ZOOM}</span>
           </button>`).join('');
         const list = s.list ? `<ul class="map">${s.list.map(([a, b]) => `<li><span>${esc(a)}</span>${ARROW}<b>${esc(b)}</b></li>`).join('')}</ul>` : '';
         return `<article class="step${isDone ? ' done' : ''}" id="step-${n}" data-step="${n}">
           <div class="step-media">${Array.isArray(s.img) ? `<div class="step-imgs">${imgs}</div>` : imgs}${s.note ? `<p class="img-note">${esc(s.note)}</p>` : ''}</div>
           <div class="step-body">
-            <div class="step-title"><span class="step-no" aria-label="${isDone ? `Schritt ${n} erledigt` : `Schritt ${n}`}">${isDone ? TICK : n}</span><h3>${esc(s.t)}</h3></div>
+            <div class="step-title"><span class="step-no" role="img" aria-label="${isDone ? `Schritt ${n} erledigt` : `Schritt ${n}`}">${isDone ? TICK : n}</span><h3>${esc(s.t)}</h3></div>
             <p>${s.d}</p>${list}
             <div class="step-actions">
               <button class="check" data-toggle="${n}" aria-pressed="${isDone}" aria-label="Schritt ${n} ${isDone ? 'als nicht erledigt markieren' : 'als erledigt markieren'}"><span class="box">${TICK}</span><span class="lbl">${isDone ? 'Erledigt' : 'Als erledigt markieren'}</span></button>
@@ -1092,15 +1093,33 @@ $app.addEventListener('error', e => {
 }, true);
 
 const lb = document.getElementById('lightbox');
+let lightboxTrigger = null;
 function openLightbox(src, cap) {
+  lightboxTrigger = document.activeElement;
   document.getElementById('lb-img').src = src;
+  document.getElementById('lb-img').alt = cap ? `Vergrössertes Foto: ${cap}` : 'Vergrössertes Anleitungsfoto';
   document.getElementById('lb-cap').textContent = cap || '';
   lb.hidden = false;
+  $app.inert = true;
   document.getElementById('lb-close').focus();
 }
-function closeLightbox() { lb.hidden = true; }
-lb.addEventListener('click', closeLightbox);
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !lb.hidden) closeLightbox(); });
+function closeLightbox() {
+  lb.hidden = true;
+  $app.inert = false;
+  lightboxTrigger?.focus();
+  lightboxTrigger = null;
+}
+lb.addEventListener('click', e => {
+  if (e.target === lb || e.target.closest('#lb-close')) closeLightbox();
+});
+document.addEventListener('keydown', e => {
+  if (lb.hidden) return;
+  if (e.key === 'Escape') closeLightbox();
+  else if (e.key === 'Tab') {
+    e.preventDefault();
+    document.getElementById('lb-close').focus();
+  }
+});
 
 window.addEventListener('hashchange', render);
 render();
