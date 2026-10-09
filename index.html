@@ -43,80 +43,6 @@
   color-scheme: dark;
 }
 
-function updateStorageNotice() {
-  const note = document.getElementById('storage-note');
-  if (!note) return;
-  note.classList.toggle('warning', !storagePersistent);
-  note.textContent = storagePersistent
-    ? 'Dein Fortschritt wird nur in diesem Browser auf diesem Gerät gespeichert. Haken markieren nur deinen persönlichen Fortschritt, keine Geräteprüfung oder Freigabe.'
-    : 'Fortschritt wird nur vorübergehend in dieser Sitzung gehalten und nicht dauerhaft gespeichert. Haken markieren keine Geräteprüfung oder Freigabe.';
-}
-
-async function copyStepLink(button) {
-  const url = new URL(location.href);
-  url.hash = `${button.dataset.copyGuide}/step-${button.dataset.copyStep}`;
-  let copied = false;
-  try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(url.href);
-      copied = true;
-    }
-  } catch {
-    copied = false;
-  }
-  if (!copied) {
-    const input = document.createElement('textarea');
-    input.value = url.href;
-    input.setAttribute('readonly', '');
-    input.style.position = 'fixed';
-    input.style.opacity = '0';
-    document.body.append(input);
-    input.select();
-    try { copied = document.execCommand('copy'); } catch { copied = false; }
-    input.remove();
-  }
-  button.parentElement.querySelector('.copy-status').textContent = copied
-    ? 'Link kopiert.'
-    : `Kopieren nicht möglich. Link: ${url.href}`;
-}
-
-function searchGuides(query) {
-  const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('de');
-  const term = normalize(query.trim());
-  if (!term) return [];
-  const results = [];
-  CATEGORIES.forEach(category => category.guides.forEach(id => {
-    const guide = GUIDES[id];
-    const guideMatch = normalize(`${category.name} ${guide.title} ${guide.sub}`).includes(term);
-    if (guideMatch) results.push({ id, category, guide, step: null });
-    let number = 0;
-    stepsOf(guide).forEach(step => {
-      number++;
-      const text = step.d.replace(/<[^>]*>/g, ' ');
-      if (normalize(`${step.t} ${text}`).includes(term)) results.push({ id, category, guide, step: { ...step, number } });
-    });
-  }));
-  return results;
-}
-
-function renderSearchResults(query) {
-  const target = document.getElementById('search-results');
-  if (!target) return;
-  const q = query.trim();
-  if (!q) { target.innerHTML = ''; return; }
-  const results = searchGuides(q);
-  if (!results.length) {
-    target.innerHTML = '<p role="status">Keine passenden Anleitungen oder Schritte gefunden.</p>';
-    return;
-  }
-  target.innerHTML = `<ul class="search-results">${results.map(result => {
-    const step = result.step;
-    const hash = step ? `${result.id}/step-${step.number}` : result.id;
-    const detail = step ? `Schritt ${step.number}: ${esc(step.t)}` : 'Anleitung öffnen';
-    return `<li><button class="cat-${result.category.id}" data-go="${hash}"><strong>${esc(result.category.name)} · ${esc(result.guide.title)}</strong><small>${detail}</small></button></li>`;
-  }).join('')}</ul>`;
-}
-
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
@@ -745,7 +671,7 @@ let resumeGuideId = null;
 let storagePersistent = true;
 const volatileDone = new Map();
 try {
-  const probe = '__anleitungen_storage_test__';
+  const probe = `__anleitungen_storage_test_${Date.now()}_${Math.random()}__`;
   localStorage.setItem(probe, '1');
   localStorage.removeItem(probe);
 } catch {
@@ -754,6 +680,80 @@ try {
 const catById = id => CATEGORIES.find(c => c.id === id);
 const stepsOf = g => g.phases.flatMap(p => p.chapters.flatMap(c => c.steps));
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+function updateStorageNotice() {
+  const note = document.getElementById('storage-note');
+  if (!note) return;
+  note.classList.toggle('warning', !storagePersistent);
+  note.textContent = storagePersistent
+    ? 'Dein Fortschritt wird nur in diesem Browser auf diesem Gerät gespeichert. Haken markieren nur deinen persönlichen Fortschritt, keine Geräteprüfung oder Freigabe.'
+    : 'Fortschritt wird nur vorübergehend in dieser Sitzung gehalten und nicht dauerhaft gespeichert. Haken markieren keine Geräteprüfung oder Freigabe.';
+}
+
+async function copyStepLink(button) {
+  const url = new URL(location.href);
+  url.hash = `${button.dataset.copyGuide}/step-${button.dataset.copyStep}`;
+  let copied = false;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url.href);
+      copied = true;
+    }
+  } catch {
+    copied = false;
+  }
+  if (!copied) {
+    const input = document.createElement('textarea');
+    input.value = url.href;
+    input.setAttribute('readonly', '');
+    input.style.position = 'fixed';
+    input.style.opacity = '0';
+    document.body.append(input);
+    input.select();
+    try { copied = document.execCommand('copy'); } catch { copied = false; }
+    input.remove();
+  }
+  button.parentElement.querySelector('.copy-status').textContent = copied
+    ? 'Link kopiert.'
+    : `Kopieren nicht möglich. Link: ${url.href}`;
+}
+
+function searchGuides(query) {
+  const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('de');
+  const term = normalize(query.trim());
+  if (!term) return [];
+  const results = [];
+  CATEGORIES.forEach(category => category.guides.forEach(id => {
+    const guide = GUIDES[id];
+    const guideMatch = normalize(`${category.name} ${guide.title} ${guide.sub}`).includes(term);
+    if (guideMatch) results.push({ id, category, guide, step: null });
+    let number = 0;
+    guide.phases.forEach(phase => phase.chapters.forEach(chapter => chapter.steps.forEach(step => {
+      number++;
+      const text = step.d.replace(/<[^>]*>/g, ' ');
+      if (normalize(`${phase.name} ${chapter.title} ${step.t} ${text}`).includes(term)) results.push({ id, category, guide, step: { ...step, number } });
+    })));
+  }));
+  return results;
+}
+
+function renderSearchResults(query) {
+  const target = document.getElementById('search-results');
+  if (!target) return;
+  const q = query.trim();
+  if (!q) { target.innerHTML = ''; return; }
+  const results = searchGuides(q);
+  if (!results.length) {
+    target.innerHTML = '<p role="status">Keine passenden Anleitungen oder Schritte gefunden.</p>';
+    return;
+  }
+  target.innerHTML = `<ul class="search-results">${results.map(result => {
+    const step = result.step;
+    const hash = step ? `${result.id}/step-${step.number}` : result.id;
+    const detail = step ? `Schritt ${step.number}: ${esc(step.t)}` : 'Anleitung öffnen';
+    return `<li><button class="cat-${result.category.id}" data-go="${hash}"><strong>${esc(result.category.name)} · ${esc(result.guide.title)}</strong><small>${detail}</small></button></li>`;
+  }).join('')}</ul>`;
+}
 
 function loadDone(id) {
   try {
