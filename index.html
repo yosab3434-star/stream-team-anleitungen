@@ -205,6 +205,7 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 .guide-head .eyebrow { color: var(--c); }
 .guide-head p { margin: 0; color: var(--muted); }
 .guide-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.guide-actions .btn { padding: 5px 8px; border-color: transparent; background: transparent; font-size: 14px; }
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 9px 14px; border-radius: 10px;
@@ -334,6 +335,14 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 }
 .finish.is-complete { background: var(--ok-bg); border-color: var(--ok); }
 .finish p { margin: 0; color: var(--muted); }
+.reset-toast {
+  position: fixed; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); z-index: 11;
+  display: flex; align-items: center; gap: 12px; transform: translateX(-50%);
+  max-width: calc(100vw - 24px); padding: 8px 10px 8px 14px;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow);
+  font-size: 14px; font-weight: 700; white-space: nowrap;
+}
+.reset-toast button { padding: 6px 10px; border: 0; border-radius: 8px; background: var(--ok-bg); color: var(--ok); font: inherit; cursor: pointer; }
 
 .continue-bar { display: none; }
 @media (max-width: 719px) {
@@ -562,6 +571,8 @@ const GUIDES = {
 
 /* ---------- Hilfsfunktionen ---------- */
 const $app = document.getElementById('app');
+let resetUndo = null;
+let resetUndoTimer = 0;
 const catById = id => CATEGORIES.find(c => c.id === id);
 const stepsOf = g => g.phases.flatMap(p => p.chapters.flatMap(c => c.steps));
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
@@ -571,6 +582,33 @@ function loadDone(id) {
 }
 function saveDone(id, set) {
   try { localStorage.setItem('done:' + id, JSON.stringify([...set])); } catch (e) {}
+}
+
+function syncGuideSteps() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const done = loadDone(id);
+  $app.querySelectorAll('.step').forEach(card => {
+    const n = Number(card.dataset.step);
+    const isDone = done.has(n);
+    card.classList.toggle('done', isDone);
+    const check = card.querySelector('.check');
+    check.setAttribute('aria-pressed', isDone);
+    check.querySelector('.lbl').textContent = isDone ? 'Erledigt' : 'Als erledigt markieren';
+    const number = card.querySelector('.step-no');
+    number.innerHTML = isDone ? TICK : n;
+    number.setAttribute('aria-label', isDone ? `Schritt ${n} erledigt` : `Schritt ${n}`);
+  });
+}
+
+function showResetUndo(id, previous) {
+  resetUndo = { id, previous: [...previous] };
+  clearTimeout(resetUndoTimer);
+  const notice = document.getElementById('reset-toast');
+  notice.hidden = false;
+  resetUndoTimer = setTimeout(() => {
+    resetUndo = null;
+    notice.hidden = true;
+  }, 5000);
 }
 
 function go(hash) {
@@ -680,7 +718,7 @@ function renderGuide(id) {
       <p>${esc(g.sub)}</p>
       <div class="guide-actions">
         <a class="btn" href="${g.pdf}" target="_blank" rel="noopener">${DOC} Original-PDF öffnen</a>
-        <button class="btn" data-reset>${RESET} Haken zurücksetzen</button>
+        ${done.size ? `<button class="btn" data-reset>${RESET} Haken zurücksetzen</button>` : ''}
       </div>
     </header>
     <div class="progress">
@@ -691,8 +729,8 @@ function renderGuide(id) {
     ${phases}
     <div class="finish">
       <div><h3>Geschafft?</h3><p>Wenn alle Schritte erledigt sind, kannst du die Haken für das nächste Mal zurücksetzen.</p></div>
-      <button class="btn" data-reset>${RESET} Haken zurücksetzen</button>
     </div>
+    <div class="reset-toast" id="reset-toast" role="status" aria-live="polite" hidden><span>Zurückgesetzt</span><button type="button" data-undo-reset>Rückgängig</button></div>
     <div class="continue-bar" id="continue-bar" hidden><button type="button" data-continue></button></div>`;
 }
 
@@ -710,6 +748,7 @@ function updateProgress(id) {
   const continueButton = continueBar.querySelector('button');
   finish.classList.toggle('is-complete', !next);
   continueBar.hidden = false;
+  $app.querySelectorAll('[data-reset]').forEach(button => { button.hidden = done === 0; });
   if (next) {
     const number = next.dataset.step;
     const title = next.querySelector('h3').textContent;
@@ -744,13 +783,23 @@ function render() {
 
 /* ---------- Bedienung ---------- */
 $app.addEventListener('click', e => {
-  const t = e.target.closest('[data-go],[data-toggle],[data-reset],[data-zoom],[data-jump],[data-continue]');
+  const t = e.target.closest('[data-go],[data-toggle],[data-reset],[data-zoom],[data-jump],[data-continue],[data-undo-reset]');
   if (!t) return;
   const id = decodeURIComponent(location.hash.slice(1));
   if (t.hasAttribute('data-go')) return go(t.dataset.go);
   if (t.dataset.jump) return document.getElementById(t.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' });
   if (t.dataset.zoom) return openLightbox(t.dataset.zoom, t.dataset.cap);
   if (t.hasAttribute('data-continue')) return scrollToNextOpen(id);
+  if (t.hasAttribute('data-undo-reset')) {
+    if (!resetUndo || resetUndo.id !== id) return;
+    saveDone(id, new Set(resetUndo.previous));
+    resetUndo = null;
+    clearTimeout(resetUndoTimer);
+    document.getElementById('reset-toast').hidden = true;
+    syncGuideSteps();
+    updateProgress(id);
+    return;
+  }
   if (t.dataset.toggle) {
     const n = Number(t.dataset.toggle);
     const set = loadDone(id);
@@ -769,14 +818,11 @@ $app.addEventListener('click', e => {
     return;
   }
   if (t.hasAttribute('data-reset')) {
+    const previous = loadDone(id);
     saveDone(id, new Set());
-    $app.querySelectorAll('.step.done').forEach(el => {
-      el.classList.remove('done');
-      const b = el.querySelector('.check');
-      b.setAttribute('aria-pressed', 'false');
-      b.querySelector('.lbl').textContent = 'Als erledigt markieren';
-    });
+    syncGuideSteps();
     updateProgress(id);
+    showResetUndo(id, previous);
   }
 });
 
