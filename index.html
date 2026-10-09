@@ -587,7 +587,7 @@ function crumbs(parts) {
 function renderStart() {
   const strips = CATEGORIES.map(c => {
     const n = c.guides.length;
-    return `<button class="strip cat-${c.id}" data-go="${c.id}" aria-label="${esc(c.name)} öffnen">
+    return `<button class="strip cat-${c.id}" data-go="${n === 1 ? c.guides[0] : c.id}" aria-label="${esc(c.name)} öffnen">
       <div class="strip-top">
         <span class="strip-icon">${ICONS[c.id]}</span>
         <span class="led ${n ? '' : 'off'}"><i></i>${n ? 'Bereit' : 'Bald'}</span>
@@ -670,7 +670,10 @@ function renderGuide(id) {
     ? `<div class="phases">${g.phases.map((p, i) => `<button class="phase-btn" data-jump="phase-${i}">${esc(p.name)}</button>`).join('')}</div>`
     : chapterNames.length > 1
       ? `<div class="phases">${chapterNames.map((t, i) => `<button class="phase-btn" data-jump="ch-${i + 1}">${esc(t)}</button>`).join('')}</div>` : '';
-  return `${crumbs([{ label: 'Start', hash: '' }, { label: cat.name, hash: cat.id }, { label: g.title, hash: id }])}
+  const trail = cat.guides.length === 1
+    ? [{ label: 'Start', hash: '' }, { label: g.title, hash: id }]
+    : [{ label: 'Start', hash: '' }, { label: cat.name, hash: cat.id }, { label: g.title, hash: id }];
+  return `${crumbs(trail)}
     <header class="guide-head">
       <span class="eyebrow">${esc(cat.name)} · ${total} Schritte</span>
       <h1>${esc(g.title)}</h1>
