@@ -205,6 +205,7 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 }
 .guide-card:hover { border-color: var(--c); transform: translateY(-2px); }
 .guide-card img { width: 148px; height: 104px; object-fit: cover; border-radius: 10px; display: block; background: var(--surface-2); }
+.guide-card img.obs-cover { object-fit: contain; background: #160707; }
 .guide-card h3 { margin-bottom: 4px; }
 .guide-card p { margin: 0; color: var(--muted); font-size: 15px; }
 .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
@@ -607,7 +608,9 @@ const GUIDES = {
     title: 'OBS / YouTube-Liveübertragung',
     sub: 'Die bereitgestellte OBS-Live-Broadcast-Anleitung als PDF.',
     pdf: 'pdf/Stream-OBS-Live-Broadcast-Anleitung.pdf',
-    cover: 'bilder/stream-tv-04.jpg',
+    cover: 'bilder/obs-youtube-live.png',
+    coverSize: [496, 246],
+    coverAlt: 'YouTube- und OBS-Symbole auf rotem Hintergrund',
     pdfOnly: true,
     phases: []
   },
@@ -897,8 +900,9 @@ function renderCategory(cat) {
     const steps = stepsOf(g).length;
     const done = loadDone(id).size;
     const phases = g.phases.length > 1 ? g.phases.map(p => `<span class="chip">${esc(p.name)}</span>`).join('') : '';
+    const coverSize = g.coverSize || IMAGE_SIZES[g.cover.slice(7, -4)];
     return `<button class="guide-card" data-go="${id}">
-      <img src="${g.cover}" alt="" loading="lazy" width="${IMAGE_SIZES[g.cover.slice(7, -4)][0]}" height="${IMAGE_SIZES[g.cover.slice(7, -4)][1]}">
+      <img class="${g.pdfOnly ? 'obs-cover' : ''}" src="${g.cover}" alt="${esc(g.coverAlt || '')}" loading="lazy" width="${coverSize[0]}" height="${coverSize[1]}">
       <div>
         <h3>${esc(g.title)}</h3>
         <p>${esc(g.sub)}</p>
