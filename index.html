@@ -43,6 +43,15 @@
   color-scheme: dark;
 }
 
+function updateStorageNotice() {
+  const note = document.getElementById('storage-note');
+  if (!note) return;
+  note.classList.toggle('warning', !storagePersistent);
+  note.textContent = storagePersistent
+    ? 'Dein Fortschritt wird nur in diesem Browser auf diesem Gerät gespeichert. Haken markieren nur deinen persönlichen Fortschritt, keine Geräteprüfung oder Freigabe.'
+    : 'Fortschritt wird nur vorübergehend in dieser Sitzung gehalten und nicht dauerhaft gespeichert. Haken markieren keine Geräteprüfung oder Freigabe.';
+}
+
 async function copyStepLink(button) {
   const url = new URL(location.href);
   url.hash = `${button.dataset.copyGuide}/step-${button.dataset.copyStep}`;
@@ -170,6 +179,8 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 }
 .search-results button:hover { border-color: var(--c); }
 .search-results small { display: block; color: var(--muted); }
+.storage-note { margin: 12px 0; color: var(--muted); font-size: 14px; }
+.storage-note.warning { padding: 10px 12px; border: 1px solid var(--stream); border-radius: 10px; color: var(--ink); }
 .resume-card {
   width: 100%; margin: 0 0 18px; padding: 16px 18px;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -708,12 +719,33 @@ let resetUndo = null;
 let resetUndoTimer = 0;
 let navObserver = null;
 let resumeGuideId = null;
+let storagePersistent = true;
+const volatileDone = new Map();
+try {
+  const probe = '__anleitungen_storage_test__';
+  localStorage.setItem(probe, '1');
+  localStorage.removeItem(probe);
+} catch {
+  storagePersistent = false;
+}
 const catById = id => CATEGORIES.find(c => c.id === id);
 const stepsOf = g => g.phases.flatMap(p => p.chapters.flatMap(c => c.steps));
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 
 function loadDone(id) {
-  try { return new Set(JSON.parse(localStorage.getItem('done:' + id) || '[]')); } catch (e) { return new Set(); }
+  try {
+    const stored = localStorage.getItem('done:' + id);
+    if (stored !== null) {
+      const parsed = JSON.parse(stored);
+      if (!Array.isArray(parsed)) throw new TypeError('Gespeicherter Fortschritt hat ein unerwartetes Format.');
+      volatileDone.set(id, new Set(parsed));
+    }
+    return new Set(volatileDone.get(id) || []);
+  } catch (error) {
+    storagePersistent = false;
+    if (error instanceof SyntaxError || error instanceof TypeError) console.warn('Fortschritt konnte nicht gelesen werden:', error);
+    return new Set(volatileDone.get(id) || []);
+  }
 }
 const preloadedImages = new Set();
 
@@ -733,7 +765,13 @@ function preloadNextSteps() {
   });
 }
 function saveDone(id, set) {
-  try { localStorage.setItem('done:' + id, JSON.stringify([...set])); } catch (e) {}
+  volatileDone.set(id, new Set(set));
+  try {
+    localStorage.setItem('done:' + id, JSON.stringify([...set]));
+  } catch {
+    storagePersistent = false;
+  }
+  updateStorageNotice();
 }
 
 function syncGuideSteps() {
@@ -811,6 +849,7 @@ function renderStart() {
       <input id="guide-search" type="search" autocomplete="off" placeholder="Bereich, Schritt oder Text">
       <div id="search-results" aria-live="polite"></div>
     </div>
+    <p class="storage-note" id="storage-note" role="status"></p>
     ${resumeCard}
     <section class="desk">${strips}</section>`;
 }
@@ -890,6 +929,7 @@ function renderGuide(id) {
       <span class="eyebrow">${esc(cat.name)} · ${total} Schritte</span>
       <h1>${esc(g.title)}</h1>
       <p>${esc(g.sub)}</p>
+      <p class="storage-note" id="storage-note" role="status"></p>
       <div class="guide-actions">
         <a class="btn" href="${g.pdf}" target="_blank" rel="noopener">${DOC} Original-PDF öffnen</a>
         ${done.size ? `<button class="btn" data-reset>${RESET} Haken zurücksetzen</button>` : ''}
@@ -979,6 +1019,7 @@ function render() {
   $app.className = 'wrap view' + (catId ? ' cat-' + catId : '');
   $app.innerHTML = html;
   void $app.offsetWidth;
+  updateStorageNotice();
   if (GUIDES[h]) {
     updateProgress(h);
     observeNavigation(h);
