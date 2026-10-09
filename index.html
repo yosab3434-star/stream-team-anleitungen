@@ -572,6 +572,7 @@ const GUIDES = {
     title: 'TV Video Setup',
     sub: 'Fernseher mit USB-Stick starten und das Video in Dauerschleife laufen lassen.',
     pdf: 'pdf/stream-tv-video-setup.pdf',
+    obsPdf: 'pdf/Stream-OBS-Live-Broadcast-Anleitung.pdf',
     cover: 'bilder/stream-tv-04.jpg',
     phases: [
       { name: 'Fernseher mit USB-Stick starten', chapters: [
@@ -958,6 +959,7 @@ function renderGuide(id) {
       <p class="storage-note" id="storage-note" role="status"></p>
       <div class="guide-actions">
         <a class="btn" href="${g.pdf}" target="_blank" rel="noopener">${DOC} Original-PDF öffnen</a>
+        ${g.obsPdf ? `<a class="btn" href="${g.obsPdf}" target="_blank" rel="noopener">${DOC} OBS-Live-Broadcast-PDF öffnen</a>` : ''}
         <button class="btn" data-reset${done.size ? '' : ' hidden'}>${RESET} Haken zurücksetzen</button>
       </div>
     </header>
