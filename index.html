@@ -136,6 +136,7 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 .strip:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--c) 45%, var(--line)); }
 .strip:hover::after, .strip:focus-visible::after { transform: scaleX(1); }
 @media (max-width: 420px) { .strip { min-height: 200px; padding: 14px; gap: 12px; } }
+@media (max-width: 420px) { .strip-name { font-size: clamp(20px, 6vw, 24px); } }
 
 .strip-top { display: flex; justify-content: space-between; align-items: center; }
 .led {
