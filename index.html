@@ -227,6 +227,7 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 .bar { flex: 1; height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
 .bar span { display: block; height: 100%; width: 0; background: var(--c); border-radius: inherit; transition: width .35s ease; }
 .count { font: 700 13px/1 var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.next-step { color: var(--muted); font-size: 14px; font-weight: 700; }
 .phases { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
 .phases::-webkit-scrollbar { display: none; }
 .phase-btn {
@@ -331,7 +332,24 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
   background: var(--surface); border: 1px solid var(--line);
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;
 }
+.finish.is-complete { background: var(--ok-bg); border-color: var(--ok); }
 .finish p { margin: 0; color: var(--muted); }
+
+.continue-bar { display: none; }
+@media (max-width: 719px) {
+  .wrap { padding-bottom: 112px; }
+  .continue-bar {
+    position: fixed; inset: auto 0 0; z-index: 10;
+    display: block; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: var(--surface); border-top: 1px solid var(--line);
+  }
+  .continue-bar button {
+    width: 100%; min-height: 48px; padding: 10px 14px;
+    border: 0; border-radius: 12px; background: var(--c); color: #fff;
+    font-weight: 700; cursor: pointer;
+  }
+  .continue-bar[hidden] { display: none; }
+}
 
 .foot { margin-top: 48px; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 16px; }
 
@@ -664,13 +682,15 @@ function renderGuide(id) {
     </header>
     <div class="progress">
       <div class="progress-row"><div class="bar"><span id="bar"></span></div><span class="count" id="count"></span></div>
+      <div class="next-step" id="next-step"></div>
       ${phaseNav}
     </div>
     ${phases}
     <div class="finish">
       <div><h3>Geschafft?</h3><p>Wenn alle Schritte erledigt sind, kannst du die Haken für das nächste Mal zurücksetzen.</p></div>
       <button class="btn" data-reset>${RESET} Haken zurücksetzen</button>
-    </div>`;
+    </div>
+    <div class="continue-bar" id="continue-bar" hidden><button type="button" data-continue></button></div>`;
 }
 
 function updateProgress(id) {
@@ -680,6 +700,30 @@ function updateProgress(id) {
   if (!bar) return;
   bar.style.width = (done / total * 100) + '%';
   document.getElementById('count').textContent = `${done} / ${total} erledigt`;
+  const remaining = [...$app.querySelectorAll('.step:not(.done)')];
+  const next = remaining[0];
+  const finish = $app.querySelector('.finish');
+  const continueBar = document.getElementById('continue-bar');
+  const continueButton = continueBar.querySelector('button');
+  finish.classList.toggle('is-complete', !next);
+  continueBar.hidden = false;
+  if (next) {
+    const number = next.dataset.step;
+    const title = next.querySelector('h3').textContent;
+    document.getElementById('next-step').textContent = `Als Nächstes: ${number} · ${title}`;
+    continueButton.textContent = `Weiter zu Schritt ${number}: ${title}`;
+    continueButton.dataset.targetStep = number;
+  } else {
+    document.getElementById('next-step').textContent = 'Alle Schritte erledigt';
+    continueButton.textContent = 'Geschafft? Abschluss anzeigen';
+    delete continueButton.dataset.targetStep;
+  }
+}
+
+function scrollToNextOpen(id) {
+  const next = $app.querySelector('.step:not(.done)');
+  const target = next || $app.querySelector('.finish');
+  target?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
 }
 
 function render() {
@@ -697,12 +741,13 @@ function render() {
 
 /* ---------- Bedienung ---------- */
 $app.addEventListener('click', e => {
-  const t = e.target.closest('[data-go],[data-toggle],[data-reset],[data-zoom],[data-jump]');
+  const t = e.target.closest('[data-go],[data-toggle],[data-reset],[data-zoom],[data-jump],[data-continue]');
   if (!t) return;
   const id = decodeURIComponent(location.hash.slice(1));
   if (t.hasAttribute('data-go')) return go(t.dataset.go);
   if (t.dataset.jump) return document.getElementById(t.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' });
   if (t.dataset.zoom) return openLightbox(t.dataset.zoom, t.dataset.cap);
+  if (t.hasAttribute('data-continue')) return scrollToNextOpen(id);
   if (t.dataset.toggle) {
     const n = Number(t.dataset.toggle);
     const set = loadDone(id);
@@ -717,6 +762,7 @@ $app.addEventListener('click', e => {
     number.innerHTML = on ? TICK : n;
     number.setAttribute('aria-label', on ? `Schritt ${n} erledigt` : `Schritt ${n}`);
     updateProgress(id);
+    if (on) requestAnimationFrame(() => scrollToNextOpen(id));
     return;
   }
   if (t.hasAttribute('data-reset')) {
