@@ -519,6 +519,22 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
   .strip, .guide-card, .strip::after, .bar span { transition: none; }
   .step-img::before { animation: none; }
 }
+@media print {
+  @page { margin: 15mm; }
+  body, .wrap { background: #fff; color: #111; }
+  .wrap { max-width: none; padding: 0; }
+  .crumbs, .guide-actions, .progress, .continue-bar, .reset-toast,
+  .check, .copy-link, .copy-status, .zoom, .lightbox, .image-error button { display: none !important; }
+  .step, .ready, .finish { break-inside: avoid; box-shadow: none; }
+  .step { grid-template-columns: 38% minmax(0, 1fr); border-color: #999; }
+  .step-img { min-height: 0; max-height: 100mm; background: #eee; }
+  .step-img img { max-height: 100mm; }
+  .step-img::before, .step-img::after { display: none !important; }
+  .step.done .step-img img { opacity: 1; }
+  .photo-frame, .step-media { break-inside: avoid; }
+  .phase { margin-top: 10mm; }
+  a { color: inherit; }
+}
 </style>
 
 <div class="wrap" id="app"></div>
@@ -1152,6 +1168,9 @@ document.addEventListener('keydown', e => {
   }
 });
 
+window.addEventListener('beforeprint', () => {
+  $app.querySelectorAll('img[loading="lazy"]').forEach(image => { image.loading = 'eager'; });
+});
 window.addEventListener('hashchange', render);
 render();
 </script>
