@@ -43,6 +43,34 @@
   color-scheme: dark;
 }
 
+async function copyStepLink(button) {
+  const url = new URL(location.href);
+  url.hash = `${button.dataset.copyGuide}/step-${button.dataset.copyStep}`;
+  let copied = false;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url.href);
+      copied = true;
+    }
+  } catch {
+    copied = false;
+  }
+  if (!copied) {
+    const input = document.createElement('textarea');
+    input.value = url.href;
+    input.setAttribute('readonly', '');
+    input.style.position = 'fixed';
+    input.style.opacity = '0';
+    document.body.append(input);
+    input.select();
+    try { copied = document.execCommand('copy'); } catch { copied = false; }
+    input.remove();
+  }
+  button.parentElement.querySelector('.copy-status').textContent = copied
+    ? 'Link kopiert.'
+    : `Kopieren nicht möglich. Link: ${url.href}`;
+}
+
 function searchGuides(query) {
   const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('de');
   const term = normalize(query.trim());
@@ -384,6 +412,12 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 .step-title h3 { padding-top: 6px; }
 .step-body p { margin: 0; }
 .step-body strong { font-weight: 700; }
+.step { scroll-margin-top: 180px; }
+.step-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.step-actions .check { margin-top: 4px; }
+.copy-link { min-height: 40px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); font-weight: 700; cursor: pointer; }
+.copy-link:hover { border-color: var(--c); }
+.copy-status { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
 
 .check {
   justify-self: start; margin-top: 4px;
@@ -711,6 +745,7 @@ function syncGuideSteps() {
     card.classList.toggle('done', isDone);
     const check = card.querySelector('.check');
     check.setAttribute('aria-pressed', isDone);
+    check.setAttribute('aria-label', `Schritt ${n} ${isDone ? 'als nicht erledigt markieren' : 'als erledigt markieren'}`);
     check.querySelector('.lbl').textContent = isDone ? 'Erledigt' : 'Als erledigt markieren';
     const number = card.querySelector('.step-no');
     number.innerHTML = isDone ? TICK : n;
@@ -823,12 +858,16 @@ function renderGuide(id) {
             <img src="bilder/${img}.jpg" alt="Foto zu Schritt ${n}: ${esc(s.t)}" loading="lazy" width="${IMAGE_SIZES[img][0]}" height="${IMAGE_SIZES[img][1]}"><span class="zoom">${ZOOM}</span>
           </button>`).join('');
         const list = s.list ? `<ul class="map">${s.list.map(([a, b]) => `<li><span>${esc(a)}</span>${ARROW}<b>${esc(b)}</b></li>`).join('')}</ul>` : '';
-        return `<article class="step${isDone ? ' done' : ''}" data-step="${n}">
+        return `<article class="step${isDone ? ' done' : ''}" id="step-${n}" data-step="${n}">
           <div class="step-media">${Array.isArray(s.img) ? `<div class="step-imgs">${imgs}</div>` : imgs}${s.note ? `<p class="img-note">${esc(s.note)}</p>` : ''}</div>
           <div class="step-body">
             <div class="step-title"><span class="step-no" aria-label="${isDone ? `Schritt ${n} erledigt` : `Schritt ${n}`}">${isDone ? TICK : n}</span><h3>${esc(s.t)}</h3></div>
             <p>${s.d}</p>${list}
-            <button class="check" data-toggle="${n}" aria-pressed="${isDone}"><span class="box">${TICK}</span><span class="lbl">${isDone ? 'Erledigt' : 'Als erledigt markieren'}</span></button>
+            <div class="step-actions">
+              <button class="check" data-toggle="${n}" aria-pressed="${isDone}" aria-label="Schritt ${n} ${isDone ? 'als nicht erledigt markieren' : 'als erledigt markieren'}"><span class="box">${TICK}</span><span class="lbl">${isDone ? 'Erledigt' : 'Als erledigt markieren'}</span></button>
+              <button class="copy-link" type="button" data-copy-step="${n}" data-copy-guide="${id}">Link zu diesem Schritt kopieren</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
           </div>
         </article>`;
       }).join('');
@@ -929,9 +968,12 @@ function scrollToNextOpen(id) {
 }
 
 function render() {
-  const h = decodeURIComponent(location.hash.slice(1));
+  const route = decodeURIComponent(location.hash.slice(1));
+  const stepRoute = route.match(/^([a-z0-9-]+)\/step-(\d+)$/);
+  const h = stepRoute ? stepRoute[1] : route;
+  const stepNumber = stepRoute ? Number(stepRoute[2]) : 0;
   let html, catId = '';
-  if (GUIDES[h]) { html = renderGuide(h); catId = GUIDES[h].cat; }
+  if (GUIDES[h] && (!stepNumber || stepNumber <= stepsOf(GUIDES[h]).length)) { html = renderGuide(h); catId = GUIDES[h].cat; }
   else if (catById(h)) { html = renderCategory(catById(h)); catId = h; }
   else html = renderStart();
   $app.className = 'wrap view' + (catId ? ' cat-' + catId : '');
@@ -946,17 +988,21 @@ function render() {
   }
   if (resumeGuideId === h) resumeGuideId = null;
   window.scrollTo(0, 0);
+  if (stepNumber && GUIDES[h] && stepNumber <= stepsOf(GUIDES[h]).length) {
+    requestAnimationFrame(() => document.getElementById(`step-${stepNumber}`)?.scrollIntoView({ block: 'start' }));
+  }
 }
 
 /* ---------- Bedienung ---------- */
 $app.addEventListener('click', e => {
-  const t = e.target.closest('[data-go],[data-toggle],[data-reset],[data-zoom],[data-jump],[data-continue],[data-undo-reset]');
+  const t = e.target.closest('[data-go],[data-toggle],[data-reset],[data-zoom],[data-jump],[data-continue],[data-undo-reset],[data-copy-step]');
   if (!t) return;
   const id = decodeURIComponent(location.hash.slice(1));
   if (t.dataset.resume) resumeGuideId = t.dataset.resume;
   if (t.hasAttribute('data-go')) return go(t.dataset.go);
   if (t.dataset.jump) return document.getElementById(t.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' });
   if (t.dataset.zoom) return openLightbox(t.dataset.zoom, t.dataset.cap);
+  if (t.hasAttribute('data-copy-step')) return copyStepLink(t);
   if (t.hasAttribute('data-continue')) return scrollToNextOpen(id);
   if (t.hasAttribute('data-undo-reset')) {
     if (!resetUndo || resetUndo.id !== id) return;
@@ -977,6 +1023,7 @@ $app.addEventListener('click', e => {
     const on = set.has(n);
     card.classList.toggle('done', on);
     t.setAttribute('aria-pressed', on);
+    t.setAttribute('aria-label', `Schritt ${n} ${on ? 'als nicht erledigt markieren' : 'als erledigt markieren'}`);
     t.querySelector('.lbl').textContent = on ? 'Erledigt' : 'Als erledigt markieren';
     const number = card.querySelector('.step-no');
     number.innerHTML = on ? TICK : n;
