@@ -235,6 +235,9 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
 .guide-head p { margin: 0; color: var(--muted); }
 .guide-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .guide-actions .btn { padding: 5px 8px; border-color: transparent; background: transparent; font-size: 14px; }
+.stream-permission { margin: 0 0 16px; padding: 14px 16px; border: 2px solid var(--stream); border-radius: 12px; background: var(--surface); font-weight: 700; }
+.stream-permission p { margin: 0; }
+.stream-permission p + p { margin-top: 6px; color: var(--muted); font-size: 14px; font-weight: 400; }
 .embedded-pdf { margin: 0 0 24px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
 .embedded-pdf h2 { margin-bottom: 6px; }
 .embedded-pdf p { margin: 6px 0 0; color: var(--muted); font-size: 15px; }
@@ -298,6 +301,7 @@ h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
   box-shadow: var(--shadow);
   transition: border-color .2s ease, opacity .2s ease;
 }
+.step.no-image { grid-template-columns: minmax(0, 1fr); }
 .step.done { border-color: color-mix(in srgb, var(--ok) 50%, var(--line)); }
 .step.done .step-img img { opacity: .55; }
 @media (max-width: 720px) { .step { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 12px; } }
@@ -606,13 +610,54 @@ const GUIDES = {
   'stream-obs-live': {
     cat: 'stream',
     title: 'OBS / YouTube-Liveübertragung',
-    sub: 'Die bereitgestellte OBS-Live-Broadcast-Anleitung als PDF.',
+    sub: 'Übertragung in OBS vorbereiten und planen. Der tatsächliche Live-Start ist in der bereitgestellten Anleitung nicht dokumentiert.',
     pdf: 'pdf/Stream-OBS-Live-Broadcast-Anleitung.pdf',
     cover: 'bilder/obs-youtube-live.png',
     coverSize: [496, 246],
     coverAlt: 'YouTube- und OBS-Symbole auf rotem Hintergrund',
-    pdfOnly: true,
-    phases: []
+    phases: [
+      { name: 'Vorbereitung', chapters: [
+        { title: 'Übertragung vorbereiten', ready: 'Das Einrichtungsfenster für die richtige YouTube-Verbindung ist geöffnet.', steps: [
+          { t: 'OBS öffnen und Übertragungsverwaltung finden', d: 'Öffne OBS und suche rechts unten im Bereich <strong>Controls</strong> nach <strong>Manage Broadcast</strong> (Übertragung verwalten). Klicke darauf, nicht auf <strong>Start Streaming</strong>.' },
+          { t: 'YouTube-Kanal prüfen', d: 'Prüfe im Fenster <strong>YouTube Broadcast Setup</strong> den oben angezeigten Kanalnamen.' },
+          { t: 'Neue Übertragung auswählen', d: 'Wähle <strong>Create New Broadcast</strong>, wenn du eine neue Übertragung anlegen möchtest. Für die Einrichtung brauchst du den Titel des Anlasses, das richtige Datum und die Startzeit sowie das freigegebene Vorschaubild. OBS ist in der Aufnahme bereits mit dem YouTube-Kanal verbunden.' }
+        ]},
+        { title: 'Titel und Beschreibung', ready: 'Thema und Datum sind aktuell; es stehen keine alten Veranstaltungsangaben mehr darin.', steps: [
+          { t: 'Titel aktualisieren', d: 'Klicke in <strong>Title</strong> und ersetze den bisherigen Titel durch das Thema des aktuellen Anlasses. Im Video wird der Predigttitel geändert und mit „Gottesdienst“ ergänzt.' },
+          { t: 'Beschreibung und Datum aktualisieren', d: 'Klicke in <strong>Description</strong>. Aktualisiere besonders das Datum in der ersten Zeile. Prüfe auch den restlichen Text und die Links, statt die alten Angaben ungeprüft zu übernehmen.' },
+          { t: 'Titel und Beschreibung zusammen prüfen', d: 'Lies Titel und Beschreibung nochmals zusammen durch. Beide müssen zum selben Anlass gehören. Die Datumsangaben vom April 2026 in den Bildern sind nur Beispiele aus dem Video.' }
+        ]},
+        { title: 'Sichtbarkeit und Zielgruppe', ready: 'Sichtbarkeit, Kategorie und Zielgruppe passen zum geplanten Inhalt.', steps: [
+          { t: 'Sichtbarkeit prüfen', d: 'Suche <strong>Privacy</strong>. Im Video ist <strong>Unlisted</strong> ausgewählt. Übernimm diese Sichtbarkeit nur, wenn sie für euren Anlass vorgesehen ist; lass dir die richtige Auswahl vom Stream-Team bestätigen.' },
+          { t: 'Kategorie prüfen', d: 'Prüfe <strong>Category</strong>. Im Beispiel steht <strong>People and blogs</strong>. Verwende die vereinbarte Kategorie für euren Kanal.' },
+          { t: 'Zielgruppe prüfen', d: 'Prüfe <strong>Is this video made for kids?</strong>. Im Video ist <strong>No</strong> ausgewählt. Das ist eine Angabe zur Zielgruppe und keine allgemeine Vorlage für jeden Inhalt. Bei Unsicherheit zuerst nachfragen. Die gelben Rahmen im Video zeigen die drei Einstellungen; das Beispiel ersetzt keine Freigabe durch die verantwortliche Person.' }
+        ]},
+        { title: 'Vorschaubild auswählen', ready: 'Das richtige Bild ist als Vorschau sichtbar; „No file selected“ steht dort nicht mehr.', steps: [
+          { t: 'Vorhandenes altes Vorschaubild entfernen', d: 'Suche den Bereich <strong>Thumbnail</strong>. Ist dort noch das Bild eines früheren Anlasses, entferne es mit <strong>Clear</strong>. Danach erscheint <strong>Select file…</strong>.' },
+          { t: 'Freigegebenes Vorschaubild auswählen', d: 'Klicke auf <strong>Select file…</strong> und öffne im Dateifenster den Ordner mit eurem vorbereiteten Vorschaubild. Wähle die passende Bilddatei und bestätige mit <strong>Open</strong>.' },
+          { t: 'Ausgewähltes Bild prüfen', d: 'Kontrolliere anschliessend das angezeigte Vorschaubild. Thema und Bild müssen zum aktuellen Anlass passen. Wenn du die Datei nicht findest, frage nach dem freigegebenen Speicherort. Das Video zeigt das Dateifenster, aber keine abgeschlossene Auswahl eines neuen Bildes; der genaue Speicherort bleibt offen.' }
+        ]},
+        { title: 'Weitere Einstellungen prüfen', ready: 'Die sichtbaren Optionen sind geprüft und die Terminplanung ist eingeblendet.', steps: [
+          { t: 'Zusätzliche Optionen ansehen', d: 'Scrolle im Broadcast-Fenster zu <strong>Additional settings</strong>. Im Video steht <strong>Latency</strong> auf <strong>Normal</strong>. <strong>Enable DVR</strong> ist angehakt und <strong>360 video</strong> nicht.' },
+          { t: 'Terminplanung einblenden', d: 'Für eine geplante Übertragung ist <strong>Schedule for later</strong> angehakt. Dadurch wird darunter das Feld für Datum und Uhrzeit angezeigt.' },
+          { t: 'Automatische Start- und Stopp-Optionen prüfen', d: '<strong>Enable Auto-start</strong> und <strong>Enable Auto-stop</strong> sind im Video ausgeschaltet. Ändere diese Optionen nicht nebenbei; verwende die vom Stream-Team bestätigte Einstellung. Die Werte aus der Aufnahme sind keine ungeprüfte Standardkonfiguration für jeden Stream.' }
+        ]}
+      ]},
+      { name: 'Terminplanung', chapters: [
+        { title: 'Termin festlegen und planen', ready: 'Der richtige Termin ist eingetragen und die Planung wurde im Konto bestätigt.', steps: [
+          { t: 'Veranstaltungstag und Startzeit eintragen', d: 'Trage im Datumsfeld den vorgesehenen Veranstaltungstag und die vereinbarte Startzeit ein. Prüfe beides nochmals; übernimm nicht die Uhrzeit aus dem Beispielbild.' },
+          { t: 'Angaben vor dem Planen nochmals prüfen', d: 'Prüfe vor dem Bestätigen noch einmal Titel, Beschreibung, Sichtbarkeit und Vorschaubild.' },
+          { t: 'Vorgesehene Planungsoption bestätigen lassen', d: 'Im Fenster sind <strong>Schedule broadcast</strong> und <strong>Schedule and select broadcast</strong> sichtbar. <strong>Schedule broadcast</strong> ist zum Planen beschriftet; <strong>Schedule and select broadcast</strong> zusätzlich zum Auswählen. Lass dir bei Unsicherheit bestätigen, welche Variante euer Ablauf vorsieht. Kontrolliere danach, ob der geplante Eintrag tatsächlich vorhanden ist. In der Aufnahme ist keine eindeutige Erfolgsbestätigung der Planung zu sehen; ein geschlossenes Fenster allein reicht nicht als Nachweis.' }
+        ]}
+      ]},
+      { name: 'Vor dem Live-Start', chapters: [
+        { title: 'Vor dem Live-Start kontrollieren', ready: 'Bild und Ton sind geprüft. Yosab, Elijah oder Yoas hat das Streamen ausdrücklich erlaubt.', steps: [
+          { t: 'Programmbild in OBS kontrollieren', d: 'Kontrolliere rechts im <strong>Program</strong>-Fenster das Bild, das ausgegeben werden soll. Am Ende des Videos ist dort <strong>Start / Intro</strong> sichtbar. Ein schwarzes Bild oder Ladesymbol ist kein fertiges Startbild.' },
+          { t: 'Geplante Übertragung sowie Bild und Ton prüfen', d: 'Prüfe mit der verantwortlichen Person den richtigen geplanten Broadcast sowie Bild und Ton. Bewegte Tonbalken allein bestätigen noch nicht, dass beim Publikum alles richtig ankommt.' },
+          { t: 'Stream-Erlaubnis vor dem Live-Start einholen', d: 'Frage immer zuerst Yosab, Elijah oder Yoas, ob du streamen darfst. Starte den Stream erst, wenn eine dieser Personen ausdrücklich Ja gesagt hat. Ohne Antwort oder bei Unsicherheit: nicht starten und nochmals nachfragen. Für eine vollständige Fortsetzung fehlt in der bereitgestellten Anleitung eine Aufnahme vom erfolgreichen Auswählen, Live-Start und der Kontrolle auf YouTube.' }
+        ]}
+      ]}
+    ]
   },
   'sound-mix': {
     cat: 'sound',
@@ -902,11 +947,11 @@ function renderCategory(cat) {
     const phases = g.phases.length > 1 ? g.phases.map(p => `<span class="chip">${esc(p.name)}</span>`).join('') : '';
     const coverSize = g.coverSize || IMAGE_SIZES[g.cover.slice(7, -4)];
     return `<button class="guide-card" data-go="${id}">
-      <img class="${g.pdfOnly ? 'obs-cover' : ''}" src="${g.cover}" alt="${esc(g.coverAlt || '')}" loading="lazy" width="${coverSize[0]}" height="${coverSize[1]}">
+      <img class="${id === 'stream-obs-live' ? 'obs-cover' : ''}" src="${g.cover}" alt="${esc(g.coverAlt || '')}" loading="lazy" width="${coverSize[0]}" height="${coverSize[1]}">
       <div>
         <h3>${esc(g.title)}</h3>
         <p>${esc(g.sub)}</p>
-        <div class="meta"><span class="chip">${g.pdfOnly ? 'PDF-Anleitung' : `${steps} Schritte`}</span>${done ? `<span class="chip">${done} erledigt</span>` : ''}${phases}</div>
+        <div class="meta"><span class="chip">${steps} Schritte</span>${done ? `<span class="chip">${done} erledigt</span>` : ''}${phases}</div>
       </div>
       <span class="go">${ARROW}</span>
     </button>`;
@@ -927,19 +972,6 @@ function renderGuide(id) {
   const g = GUIDES[id];
   const cat = catById(g.cat);
   const done = loadDone(id);
-  if (g.pdfOnly) {
-    return `${crumbs([{ label: 'Start', hash: '' }, { label: cat.name, hash: cat.id }, { label: g.title, hash: id }])}
-      <header class="guide-head">
-        <span class="eyebrow">${esc(cat.name)} · PDF-Anleitung</span>
-        <h1>${esc(g.title)}</h1>
-        <p>${esc(g.sub)}</p>
-      </header>
-      <section class="embedded-pdf" aria-labelledby="obs-pdf-heading">
-        <h2 id="obs-pdf-heading">${esc(g.title)}</h2>
-        <iframe src="${g.pdf}" title="${esc(g.title)} als PDF" loading="lazy"></iframe>
-        <p><a href="${g.pdf}" target="_blank" rel="noopener">PDF in einem neuen Tab öffnen</a></p>
-      </section>`;
-  }
   let n = 0, ch = 0;
   const phases = g.phases.map((p, pi) => {
     const chapters = p.chapters.map(c => {
@@ -947,15 +979,16 @@ function renderGuide(id) {
       const steps = c.steps.map(s => {
         n++;
         const isDone = done.has(n);
-        const imgs = [].concat(s.img).map(img => `<div class="photo-frame">
+        const hasImages = Boolean(s.img);
+        const imgs = hasImages ? [].concat(s.img).map(img => `<div class="photo-frame">
             <button class="step-img${IMAGE_SIZES[img][1] > IMAGE_SIZES[img][0] ? ' portrait' : ''}" style="--step-image: url('bilder/${img}.jpg')" data-zoom="bilder/${img}.jpg" data-cap="${n}. ${esc(s.t)}" aria-label="Bild zu Schritt ${n} vergrössern">
               <img src="bilder/${img}.jpg" data-original-src="bilder/${img}.jpg" alt="Foto zur Anleitung: ${esc(s.t)}" loading="lazy" width="${IMAGE_SIZES[img][0]}" height="${IMAGE_SIZES[img][1]}"><span class="zoom">${ZOOM}</span>
             </button>
             <div class="image-error" role="status" hidden><span>Bild konnte nicht geladen werden.</span><button type="button" data-retry-image>Erneut laden</button></div>
-          </div>`).join('');
+          </div>`).join('') : '';
         const list = s.list ? `<ul class="map">${s.list.map(([a, b]) => `<li><span>${esc(a)}</span>${ARROW}<b>${esc(b)}</b></li>`).join('')}</ul>` : '';
-        return `<article class="step${isDone ? ' done' : ''}" id="step-${n}" data-step="${n}">
-          <div class="step-media">${Array.isArray(s.img) ? `<div class="step-imgs">${imgs}</div>` : imgs}${s.note ? `<p class="img-note">${esc(s.note)}</p>` : ''}</div>
+        return `<article class="step${isDone ? ' done' : ''}${hasImages ? '' : ' no-image'}" id="step-${n}" data-step="${n}">
+          ${hasImages ? `<div class="step-media">${Array.isArray(s.img) ? `<div class="step-imgs">${imgs}</div>` : imgs}${s.note ? `<p class="img-note">${esc(s.note)}</p>` : ''}</div>` : ''}
           <div class="step-body">
             <div class="step-title"><span class="step-no" role="img" aria-label="${isDone ? `Schritt ${n} erledigt` : `Schritt ${n}`}">${isDone ? TICK : n}</span><h3>${esc(s.t)}</h3></div>
             <p>${s.d}</p>${list}
@@ -992,6 +1025,10 @@ function renderGuide(id) {
         <button class="btn" data-reset${done.size ? '' : ' hidden'}>${RESET} Haken zurücksetzen</button>
       </div>
     </header>
+    ${id === 'stream-obs-live' ? `<aside class="stream-permission" aria-label="Wichtiger Hinweis zur Stream-Erlaubnis">
+      <p>Vor jedem Live-Start zuerst Yosab, Elijah oder Yoas fragen. Nur nach einem ausdrücklichen Ja streamen; ohne Antwort oder bei Unsicherheit nicht starten.</p>
+      <p>Die Haken speichern nur deinen persönlichen Fortschritt. Sie sind keine Erlaubnis. Eine frühere Erlaubnis gilt nicht automatisch für einen neuen Anlass.</p>
+    </aside>` : ''}
     <div class="progress">
       <div class="progress-row"><div class="bar"><span id="bar"></span></div><span class="count" id="count"></span></div>
       <div class="next-step" id="next-step"></div>
@@ -1077,12 +1114,10 @@ function render() {
   $app.innerHTML = html;
   void $app.offsetWidth;
   updateStorageNotice();
-  if (GUIDES[h] && !GUIDES[h].pdfOnly) {
+  if (GUIDES[h]) {
     updateProgress(h);
     observeNavigation(h);
     if (resumeGuideId === h) requestAnimationFrame(() => scrollToNextOpen(h));
-  } else if (GUIDES[h]) {
-    navObserver?.disconnect();
   } else {
     navObserver?.disconnect();
   }
